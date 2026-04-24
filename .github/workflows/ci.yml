@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.preset }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [gcc13-debug, clang18-debug, gcc13-release, clang18-release]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install compilers and tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            g++-13 clang-18 clang-tidy-18 clang-format-18 \
+            make
+          pip3 install --user cmake --quiet
+
+      - name: Configure
+        run: ~/.local/bin/cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: ~/.local/bin/cmake --build build/${{ matrix.preset }} -j $(nproc)
+
+      - name: Test
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure
+
+  asan:
+    name: ASAN+UBSAN (clang18)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install compilers
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends clang-18 make
+          pip3 install --user cmake --quiet
+
+      - name: Configure
+        run: ~/.local/bin/cmake --preset clang18-asan
+
+      - name: Build
+        run: ~/.local/bin/cmake --build build/clang18-asan -j $(nproc)
+
+      - name: Test (ASAN+UBSAN)
+        run: |
+          ASAN_OPTIONS=detect_leaks=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+          ctest --test-dir build/clang18-asan --output-on-failure
