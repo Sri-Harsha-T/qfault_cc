@@ -4,7 +4,7 @@
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
 
-_Last updated: 2026-04-24 — Project initialisation_
+_Last updated: 2026-04-25 — GitHub Issues created; starting 1-D-1_
 
 ---
 
@@ -17,22 +17,23 @@ code patch operations in the same data structure without a lossy conversion.
 
 ## Active Story
 
-**None yet — Stage 1 kickoff required**
+**Issue #2 — 1-D-1: CMakeLists.txt with build presets**
 
-Next: run `/pm:prd-new` → write Stage 1 PRD → run `/pm:prd-parse` → create
-GitHub Issues for Stage 1 epics.
+This is the first concrete code task. It unblocks everything else.
 
 ## State of Work
 
 - ✅ Project skeleton created (memory-bank/, docs/, .claude/, scripts/)
 - ✅ CLAUDE.md, CHANGELOG.md, all memory-bank files initialised
-- ✅ ADR template and index created
+- ✅ ADR template and index created; ADRs 0001–0004 accepted
 - ✅ ccpm skills placed in .claude/skills/ccpm
-- 🚧 Stage 1 PRD not yet written
-- ⬜ GitHub repo not yet created / Issues not yet set up
-- ⬜ CMakeLists.txt not yet written
-- ⬜ `QFaultIR` data structures not yet designed
-- ⬜ `PassManager` not yet implemented
+- ✅ CLAUDE.md improved (directory layout, active stage, QEC invariants, ADR table)
+- ✅ Stage 1 phase directory renamed: docs/phases/stage-1-ir-pass-manager/
+- ✅ GitHub Issues created: Epic #1 + 17 task issues (#2–#18), Milestone #6
+- ✅ Local epic files: .claude/epics/stage-1-ir-pass-manager/ with github-mapping.md
+- 🚧 CMakeLists.txt not yet written — **IN PROGRESS: Issue #2**
+- ⬜ `QFaultIR` data structures not yet written (issues #6–#10, depends on #2)
+- ⬜ `PassManager` not yet implemented (issues #11–#15, depends on #8)
 
 ## Recent Decisions (last 5 sessions)
 
@@ -51,14 +52,12 @@ GitHub Issues for Stage 1 epics.
 
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
-2. Run: ./scripts/quick-test.sh (once CMake is configured)
-3. First concrete task: Design QFaultIR data structures
-   - Key question: Can one module hold both logical AND physical-level ops?
-   - Read: memory-bank/systemPatterns.md section "Two-Level IR"
-   - Read: docs/adr/0001-ir-representation.md (once written)
-   - Deliverable: src/qfault/ir/QFaultIR.hpp skeleton with Doxygen comments
-4. After IR sketch: /pm:prd-new to write Stage 1 PRD formally
-5. After PRD: /pm:prd-parse → /pm:epic-decompose → GitHub Issues
+2. Active issue: GitHub Issue #2 (1-D-1 — CMakeLists.txt with build presets)
+   - Read: .claude/epics/stage-1-ir-pass-manager/2.md for full ACs
+   - Read: memory-bank/techContext.md for CMake flags and dependency list
+   - Deliverables: CMakeLists.txt, CMakePresets.json, GoogleTest via FetchContent
+   - When done: close #2, then start #3 (CI) and in parallel #4, #5, #6, #7
+3. Dependency graph: .claude/epics/stage-1-ir-pass-manager/github-mapping.md
 ```
 
 ## Failed Approaches — DO NOT RETRY
