@@ -1,1 +1,11 @@
 .env
+build/
+_deps/
+*.bak
+compile_commands.json
+.cache/
+*.gcov
+*.gcda
+*.gcno
+CTestTestfile.cmake
+*_include.cmake

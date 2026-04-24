@@ -49,7 +49,8 @@ clang-tidy --config-file=.clang-tidy src/
 cppcheck --enable=all --suppress=missingInclude src/
 ```
 
-CMake minimum: 3.16. Compilers: clang-17+ and gcc-13+ must both build clean.
+CMake minimum: 3.21 (presets). Local install: `~/.local/bin/cmake` (pip). Scripts auto-detect it.
+Compilers: clang-17+ and gcc-13+ must both build clean (CI); gcc-9 is insufficient.
 
 ## Source directory layout
 
