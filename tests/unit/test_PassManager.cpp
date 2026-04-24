@@ -5,6 +5,7 @@
 #include <qfault/passes/PassManager.hpp>
 
 #include <gtest/gtest.h>
+#include <sstream>
 #include <string_view>
 #include <vector>
 
@@ -106,4 +107,46 @@ TEST(PassManager, TimerIsStartedPerPass) {
     pm.run(m, ctx);
     // After FailingPass, timer was started and stopped — duration is non-negative
     EXPECT_GE(ctx.lastPassDuration().count(), 0);
+}
+
+TEST(PassManager, PrintStatsContainsPassName) {
+    std::vector<int> log;
+    PassManager pm;
+    pm.add<CountingPass>(log, 1);
+
+    QFaultIRModule m{.level = IRLevel::LOGICAL};
+    PassContext ctx{5};
+    pm.run(m, ctx);
+
+    std::ostringstream oss;
+    pm.printStats(oss);
+    EXPECT_NE(oss.str().find("CountingPass"), std::string::npos);
+    EXPECT_NE(oss.str().find("Duration"), std::string::npos);
+}
+
+TEST(PassManager, PrintStatsBeforeRunPrintsEmptyTable) {
+    PassManager pm;
+    pm.add<FailingPass>();
+
+    std::ostringstream oss;
+    pm.printStats(oss);
+    // Header still printed; no rows (no crash)
+    EXPECT_NE(oss.str().find("Pass"), std::string::npos);
+    EXPECT_EQ(pm.stats().size(), 0u);
+}
+
+TEST(PassManager, StatsAccumulatedPerPass) {
+    std::vector<int> log;
+    PassManager pm;
+    pm.add<CountingPass>(log, 1)
+      .add<CountingPass>(log, 2);
+
+    QFaultIRModule m{.level = IRLevel::LOGICAL};
+    PassContext ctx{5};
+    pm.run(m, ctx);
+
+    ASSERT_EQ(pm.stats().size(), 2u);
+    EXPECT_EQ(pm.stats()[0].name, "CountingPass");
+    EXPECT_EQ(pm.stats()[1].name, "CountingPass");
+    EXPECT_GE(pm.stats()[0].duration.count(), 0);
 }
