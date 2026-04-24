@@ -12,7 +12,7 @@
     },
     {
       "name": "debug",
-      "displayName": "Debug",
+      "displayName": "Debug (default compiler)",
       "description": "Debug build with assertions enabled",
       "inherits": "base",
       "cacheVariables": {
@@ -22,7 +22,7 @@
     },
     {
       "name": "release",
-      "displayName": "Release",
+      "displayName": "Release (default compiler)",
       "description": "Optimised release build",
       "inherits": "base",
       "cacheVariables": {
@@ -32,7 +32,7 @@
     },
     {
       "name": "asan",
-      "displayName": "ASAN + UBSAN",
+      "displayName": "ASAN + UBSAN (default compiler)",
       "description": "Address and undefined-behaviour sanitizers",
       "inherits": "base",
       "cacheVariables": {
@@ -44,42 +44,85 @@
     {
       "name": "coverage",
       "displayName": "Coverage",
-      "description": "Build with gcov instrumentation for line coverage",
+      "description": "gcov instrumentation for line coverage",
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_CXX_FLAGS": "--coverage -fprofile-arcs -ftest-coverage"
       }
+    },
+    {
+      "name": "clang18-debug",
+      "displayName": "Debug (clang-18)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang-18",
+        "CMAKE_CXX_COMPILER": "clang++-18",
+        "CMAKE_CXX_FLAGS": "-Werror"
+      }
+    },
+    {
+      "name": "clang18-release",
+      "displayName": "Release (clang-18)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang-18",
+        "CMAKE_CXX_COMPILER": "clang++-18",
+        "CMAKE_CXX_FLAGS": "-Werror"
+      }
+    },
+    {
+      "name": "gcc13-debug",
+      "displayName": "Debug (gcc-13)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc-13",
+        "CMAKE_CXX_COMPILER": "g++-13",
+        "CMAKE_CXX_FLAGS": "-Werror"
+      }
+    },
+    {
+      "name": "gcc13-release",
+      "displayName": "Release (gcc-13)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc-13",
+        "CMAKE_CXX_COMPILER": "g++-13",
+        "CMAKE_CXX_FLAGS": "-Werror"
+      }
+    },
+    {
+      "name": "clang18-asan",
+      "displayName": "ASAN + UBSAN (clang-18)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang-18",
+        "CMAKE_CXX_COMPILER": "clang++-18",
+        "QFAULT_ENABLE_ASAN": "ON",
+        "CMAKE_CXX_FLAGS": "-Werror"
+      }
     }
   ],
   "buildPresets": [
-    {
-      "name": "debug",
-      "configurePreset": "debug"
-    },
-    {
-      "name": "release",
-      "configurePreset": "release"
-    },
-    {
-      "name": "asan",
-      "configurePreset": "asan"
-    },
-    {
-      "name": "coverage",
-      "configurePreset": "coverage"
-    }
+    { "name": "debug",           "configurePreset": "debug" },
+    { "name": "release",         "configurePreset": "release" },
+    { "name": "asan",            "configurePreset": "asan" },
+    { "name": "coverage",        "configurePreset": "coverage" },
+    { "name": "clang18-debug",   "configurePreset": "clang18-debug" },
+    { "name": "clang18-release", "configurePreset": "clang18-release" },
+    { "name": "gcc13-debug",     "configurePreset": "gcc13-debug" },
+    { "name": "gcc13-release",   "configurePreset": "gcc13-release" },
+    { "name": "clang18-asan",    "configurePreset": "clang18-asan" }
   ],
   "testPresets": [
-    {
-      "name": "debug",
-      "configurePreset": "debug",
-      "output": { "outputOnFailure": true }
-    },
-    {
-      "name": "asan",
-      "configurePreset": "asan",
-      "output": { "outputOnFailure": true }
-    }
+    { "name": "debug",         "configurePreset": "debug",         "output": { "outputOnFailure": true } },
+    { "name": "clang18-debug", "configurePreset": "clang18-debug", "output": { "outputOnFailure": true } },
+    { "name": "gcc13-debug",   "configurePreset": "gcc13-debug",   "output": { "outputOnFailure": true } },
+    { "name": "clang18-asan",  "configurePreset": "clang18-asan",  "output": { "outputOnFailure": true } }
   ]
 }

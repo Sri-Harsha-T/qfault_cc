@@ -5,10 +5,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CMAKE="${HOME}/.local/bin/cmake"
 [[ -x "$CMAKE" ]] || CMAKE="$(command -v cmake)"
 
-echo "=== QFault Full Build (debug + release) ==="
+echo "=== QFault Full Build (clang-18 + gcc-13, debug + release) ==="
 START=$SECONDS
 
-for preset in debug release; do
+for preset in clang18-debug clang18-release gcc13-debug gcc13-release; do
     echo ""
     echo ">> Preset: $preset"
     "$CMAKE" --preset "$preset" -S "$ROOT"

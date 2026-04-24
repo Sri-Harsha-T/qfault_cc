@@ -126,7 +126,7 @@ if(QFAULT_ENABLE_PYTHON)
 endif()
 
 # ── Convenience targets ────────────────────────────────────────────────────────
-find_program(CLANG_TIDY_EXE NAMES clang-tidy clang-tidy-17 clang-tidy-18)
+find_program(CLANG_TIDY_EXE NAMES clang-tidy-18 clang-tidy-17 clang-tidy)
 if(CLANG_TIDY_EXE)
     add_custom_target(tidy
         COMMAND ${CLANG_TIDY_EXE}
@@ -136,9 +136,11 @@ if(CLANG_TIDY_EXE)
         COMMENT "Running clang-tidy on libqfault sources"
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
+else()
+    message(STATUS "clang-tidy not found — 'make tidy' target unavailable")
 endif()
 
-find_program(CLANG_FORMAT_EXE NAMES clang-format clang-format-17 clang-format-18)
+find_program(CLANG_FORMAT_EXE NAMES clang-format-18 clang-format-17 clang-format)
 if(CLANG_FORMAT_EXE)
     file(GLOB_RECURSE ALL_CXX_FILES
         "src/**/*.cpp" "src/**/*.hpp"
@@ -150,4 +152,6 @@ if(CLANG_FORMAT_EXE)
         COMMENT "Running clang-format on all C++ files"
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
+else()
+    message(STATUS "clang-format not found — 'make format' target unavailable")
 endif()
