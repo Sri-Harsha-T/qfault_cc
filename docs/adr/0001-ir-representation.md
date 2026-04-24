@@ -57,6 +57,14 @@ running. The `LatticeSurgeryPass` transitions the module from `LOGICAL` to
   the discriminated union approach may need to be revisited
 - **Stage 1 gate explicitly checks this risk** before committing to the approach
 
+**Empirical finding (Stage 1 gate — 2026-04-25):**
+`tests/integration/test_ir_two_level.cpp` confirms no structural incompatibility.
+`LogicalGate` (symbolic `LogicalQubit` operands) and `PatchOp` (numeric `PatchCoord`
+grid coordinates) coexist cleanly in `std::variant<LogicalGate, PatchOp>`. The
+`LevelTransitionSimulation` test demonstrates that a module can transition from
+LOGICAL to PHYSICAL in place by clearing instructions, pushing `PatchOp`s, and
+flipping `m.level`. ADR-0001 is confirmed viable for the full Stage 1 scope.
+
 ---
 
 ## Implementation Notes for AI Sessions
