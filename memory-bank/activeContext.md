@@ -17,9 +17,9 @@ code patch operations in the same data structure without a lossy conversion.
 
 ## Active Story
 
-**Issue #2 — 1-D-1: CMakeLists.txt with build presets**
+**Issue #8 — 1-A-3: QFaultIRModule** (next up; depends on #6 ✅ and #7 ✅)
 
-This is the first concrete code task. It unblocks everything else.
+Also open: #3 (CI), #11 (PassBase), #12 (PassContext) — can start in parallel with #8.
 
 ## State of Work
 
@@ -31,9 +31,14 @@ This is the first concrete code task. It unblocks everything else.
 - ✅ Stage 1 phase directory renamed: docs/phases/stage-1-ir-pass-manager/
 - ✅ GitHub Issues created: Epic #1 + 17 task issues (#2–#18), Milestone #6
 - ✅ Local epic files: .claude/epics/stage-1-ir-pass-manager/ with github-mapping.md
-- 🚧 CMakeLists.txt not yet written — **IN PROGRESS: Issue #2**
-- ⬜ `QFaultIR` data structures not yet written (issues #6–#10, depends on #2)
-- ⬜ `PassManager` not yet implemented (issues #11–#15, depends on #8)
+- ✅ CMakeLists.txt + CMakePresets.json — Issue #2 (b262a63)
+- ✅ .clang-tidy, .clang-format, compiler presets (clang18/gcc13) — Issue #4 (2503817)
+- ✅ scripts/quick-test.sh — Issue #5 (2503817)
+- ✅ LogicalQubit, GateKind, LogicalGate — Issue #6 (2503817)
+- ✅ PatchCoord, MeasBasis, PatchOpKind, PatchOp — Issue #7 (2503817)
+- ⬜ QFaultIRModule (IRLevel, variant, assertLevel) — Issue #8 (unblocked)
+- ⬜ PassBase + PassContext — Issues #11, #12 (unblocked, parallel with #8)
+- ⬜ GitHub Actions CI — Issue #3 (unblocked)
 
 ## Recent Decisions (last 5 sessions)
 
@@ -52,12 +57,15 @@ This is the first concrete code task. It unblocks everything else.
 
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
-2. Active issue: GitHub Issue #2 (1-D-1 — CMakeLists.txt with build presets)
-   - Read: .claude/epics/stage-1-ir-pass-manager/2.md for full ACs
-   - Read: memory-bank/techContext.md for CMake flags and dependency list
-   - Deliverables: CMakeLists.txt, CMakePresets.json, GoogleTest via FetchContent
-   - When done: close #2, then start #3 (CI) and in parallel #4, #5, #6, #7
-3. Dependency graph: .claude/epics/stage-1-ir-pass-manager/github-mapping.md
+2. Run: ./scripts/quick-test.sh  (cmake via ~/.local/bin/cmake)
+3. Next issues (all unblocked):
+   - #8: QFaultIRModule (IRLevel enum, variant<LogicalGate,PatchOp>, assertLevel)
+         Read: docs/adr/0001-ir-representation.md + .claude/epics/.../8.md
+   - #11: PassBase abstract class (can parallel with #8)
+   - #12: PassContext (code distance d, diagnostics, timer) (can parallel with #8)
+   - #3: GitHub Actions CI (.github/workflows/ci.yml) — requires clang-tidy-18 installed
+   Suggested order: do #8 first (critical path), then #11+#12 in same session.
+4. Dependency graph: .claude/epics/stage-1-ir-pass-manager/github-mapping.md
 ```
 
 ## Failed Approaches — DO NOT RETRY

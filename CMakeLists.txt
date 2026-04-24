@@ -61,11 +61,9 @@ if(QFAULT_RUN_BENCHMARKS)
 endif()
 
 # ── Library: libqfault ─────────────────────────────────────────────────────────
-# Sources are added incrementally as each story is implemented.
-# CMake requires at least one source file — use a stub until real sources exist.
-set(QFAULT_SOURCES
-    src/qfault/util/qfault_stub.cpp
-)
+# Re-run cmake configure when new .cpp files are added (GLOB_RECURSE is evaluated
+# at configure time, not build time).
+file(GLOB_RECURSE QFAULT_SOURCES CONFIGURE_DEPENDS "src/qfault/**/*.cpp")
 
 add_library(libqfault STATIC ${QFAULT_SOURCES})
 set_target_properties(libqfault PROPERTIES OUTPUT_NAME qfault)

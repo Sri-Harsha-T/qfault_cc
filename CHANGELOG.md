@@ -13,7 +13,7 @@ The "Failed Approaches" section is **mandatory reading** — do not retry listed
 
 | Date | Approach | Why It Failed | Alternative Used |
 |------|----------|---------------|------------------|
-| —    | *(none yet — project initialising)* | — | — |
+| 2026-04-25 | Omitting `std::optional` fields in designated-init aggregate construction | gcc-13 `-Wmissing-field-initializers` fires even when the default is correct (e.g. `LogicalGate{.kind=T, .operands={q}}` omits `.angle`). clang-18 is silent. | Add `= std::nullopt` as a default member initializer in the struct; then the field need not be listed in designated inits |
 
 **Template for new entries:**
 ```
