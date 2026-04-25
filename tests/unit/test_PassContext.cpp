@@ -65,7 +65,8 @@ TEST(PassContext, TimerMeasuresElapsedTime) {
     PassContext ctx{5};
     ctx.startTimer("test");
     // Minimal spin so the timer actually ticks
-    volatile int sum = 0;
+    // Use long long to avoid signed-integer overflow under UBSAN (sum of 0..99999 > INT_MAX)
+    volatile long long sum = 0;
     for (int i = 0; i < 100000; ++i) sum += i;
     (void)sum;
     ctx.stopTimer();

@@ -14,6 +14,8 @@ The "Failed Approaches" section is **mandatory reading** — do not retry listed
 | Date | Approach | Why It Failed | Alternative Used |
 |------|----------|---------------|------------------|
 | 2026-04-25 | Omitting `std::optional` fields in designated-init aggregate construction | gcc-13 `-Wmissing-field-initializers` fires even when the default is correct (e.g. `LogicalGate{.kind=T, .operands={q}}` omits `.angle`). clang-18 is silent. | Add `= std::nullopt` as a default member initializer in the struct; then the field need not be listed in designated inits |
+| 2026-04-25 | `volatile int sum` spin loop in `test_PassContext::TimerMeasuresElapsedTime` | `sum(0..99999) = 4,999,950,000` exceeds `INT_MAX`; UBSAN reports signed integer overflow at `i=65536` (`2147450880 + 65536`). clang-18 + UBSAN with `halt_on_error=1` aborts the test. | Changed to `volatile long long sum` — the value fits without overflow |
+| 2026-04-25 | Generic `debug` CMake preset on a machine with system gcc 9.4 | gcc 9.4 does not support C++20 `= default operator==`; compilation fails with "cannot be defaulted". The `debug` preset has no explicit compiler. | Always use named presets: `gcc13-debug` or `clang18-debug`. System compiler is only used for non-C++20 projects. |
 
 **Template for new entries:**
 ```
@@ -24,12 +26,15 @@ The "Failed Approaches" section is **mandatory reading** — do not retry listed
 
 ## Stage Progress Log
 
-### Stage 1: IR + Pass Manager Core
-- [ ] Kickoff complete
-- [ ] `QFaultIR` data structures defined
-- [ ] `PassManager` skeleton implemented
-- [ ] No-op pass chain with full test harness
-- [ ] Stage 1 gate: IR can represent both logical Clifford+T AND surface code patch ops
+### Stage 1: IR + Pass Manager Core ✅ COMPLETE (2026-04-25)
+- [x] Kickoff complete
+- [x] `QFaultIR` data structures defined (LogicalGate, PatchOp, QFaultIRModule)
+- [x] `PassManager` skeleton implemented (add<T>(), run(), printStats())
+- [x] No-op pass chain with full test harness (93 tests, gcc-13 + clang-18)
+- [x] Stage 1 gate: IR can represent both logical Clifford+T AND surface code patch ops
+- [x] QASM 3.0 Lexer + Parser (Clifford+T subset) with round-trip test
+- [x] GitHub Actions CI (4-way matrix + ASAN job)
+- [x] UBSAN overflow fix in test_PassContext
 
 ### Stage 2: Synthesis Pass (T-Gate)
 - [ ] `SynthesisProvider` interface defined

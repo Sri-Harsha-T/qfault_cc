@@ -4,25 +4,25 @@
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
 
-_Last updated: 2026-04-25 — Stage 1 implementation complete (93 tests green); only CI (#3) remains_
+_Last updated: 2026-04-25 — Stage 1 fully closed; UBSAN fix committed; Stage 2 plan written_
 
 ---
 
 ## Current Phase
 
-**Stage 1 of 5: IR + Pass Manager Core** ← IMPLEMENTATION COMPLETE  
-Target duration: 3–4 weeks  
-Stage gate: ✅ PASSED — `tests/integration/test_ir_two_level.cpp` confirms two-level IR works.
+**Stage 2 of 5: Synthesis Pass (T-Gate)** ← NEXT TO START
+Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 issues Done.
 
 ## Active Story
 
-**Issue #3 — 1-D-2: GitHub Actions CI** (only remaining open issue in Stage 1)
+**No active story** — Stage 2 planning complete; ready to open Epic + Issues on GitHub.
 
 ## State of Work
 
+### Stage 1 (COMPLETE)
 - ✅ Project skeleton created (memory-bank/, docs/, .claude/, scripts/)
 - ✅ CLAUDE.md, CHANGELOG.md, all memory-bank files initialised
-- ✅ ADR template and index created; ADRs 0001–0004 accepted
+- ✅ ADR template and index created; ADRs 0001–0004 written
 - ✅ ccpm skills placed in .claude/skills/ccpm
 - ✅ CMakeLists.txt + CMakePresets.json — Issue #2 (b262a63)
 - ✅ .clang-tidy, .clang-format, compiler presets (clang18/gcc13) — Issue #4 (2503817)
@@ -38,36 +38,48 @@ Stage gate: ✅ PASSED — `tests/integration/test_ir_two_level.cpp` confirms tw
 - ✅ QASM 3.0 Lexer (Clifford+T subset) — Issue #16 (6ef5bd4)
 - ✅ QASM 3.0 Parser → QFaultIRModule — Issue #17 (6ef5bd4)
 - ✅ QASM 3.0 round-trip integration test — Issue #18 (6ef5bd4)
-- ⬜ GitHub Actions CI — Issue #3 (requires clang-tidy-18 installed in CI)
+- ✅ GitHub Actions CI matrix + ASAN job — Issue #3 (df0c6ce)
+- ✅ UBSAN overflow fix (test_PassContext volatile int → long long)
+- ✅ All GitHub issue descriptions populated (was empty)
+- ✅ Stage 1 phase docs updated (exit-report, kickoff, todo, spec)
 
-**Test count: 93/93 green on gcc-13 and clang-18 with -Werror**
+**Test count: 93/93 green on gcc-13 and clang-18 with -Werror and ASAN+UBSAN**
+
+### Stage 2 (PLANNED, not started)
+- ✅ Stage 2 spec written: `docs/phases/stage-2-synthesis/spec.md`
+- ✅ Stage 2 todo written: `docs/phases/stage-2-synthesis/todo.md`
+- ✅ Stage 2 kickoff written: `docs/phases/stage-2-synthesis/kickoff.md`
+- ⬜ ADRs 0002/0003/0004 finalised (Draft → Accepted)
+- ⬜ Stage 2 Epic + Issues created on GitHub
+- ⬜ Stage 2 implementation begins
 
 ## Recent Decisions (last 5 sessions)
 
 | Date | Decision | ADR |
 |------|----------|-----|
 | 2026-04-24 | Use ccpm for project management | — |
-| 2026-04-24 | GridSynth as default synthesiser; SK as benchmark only | ADR-0002 (draft) |
+| 2026-04-24 | GridSynth as default synthesiser; SK as benchmark only | ADR-0004 (draft) |
 | 2026-04-24 | Global code distance d for v0.1; variable-d deferred | ADR-0003 (draft) |
-| 2026-04-24 | Concepts over virtual inheritance for SynthesisProvider | ADR-0004 (draft) |
+| 2026-04-24 | Concepts over virtual inheritance for SynthesisProvider | ADR-0002 (draft) |
 | 2026-04-25 | ADR-0001 confirmed: variant<LogicalGate,PatchOp> viable, no structural incompatibility | ADR-0001 accepted |
 
 ## Open Blockers
 
-- CI (#3) requires `clang-tidy-18` and `clang-format-18` in the runner image.
-  `sudo apt-get install -y clang-tidy-18 clang-format-18` on ubuntu-24.04.
+None. Stage 1 is fully closed.
 
 ## Next Action — Start Here on Next Session
 
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
-2. Run: ./scripts/quick-test.sh  (cmake via ~/.local/bin/cmake) — expect 93 tests green
-3. Remaining Stage 1 work:
-   - #3: GitHub Actions CI → .github/workflows/ci.yml
-     Uses ubuntu-24.04, installs clang-18/gcc-13/cmake-pip, runs gcc13-debug + clang18-debug presets
-     Then Stage 1 is 100% complete.
-4. After #3: close Epic #1, start Stage 2 planning.
-   Stage 2 = LatticeSurgeryPass (LOGICAL→PHYSICAL lowering), Stim integration.
+2. Run: cmake --preset gcc13-debug && cmake --build build/gcc13-debug -j && ctest --test-dir build/gcc13-debug
+   (The generic 'debug' preset uses system gcc 9.4 which cannot compile C++20 — always use named presets)
+3. Start Stage 2:
+   a. /adr — finalise ADR-0002 (SynthesisProvider Concept), ADR-0003, ADR-0004
+   b. /ccpm — create Epic for Stage 2, decompose into GitHub Issues
+   c. Implement Epic 2-A: SynthesisProvider Concept + GridSynthProvider + SKProvider
+   d. Implement Epic 2-B: TGateSynthesisPass<Provider>
+   e. Stage gate: T-count within 1% of GridSynth reference; overhead ≤5%
+4. Stage 2 spec: docs/phases/stage-2-synthesis/spec.md
 ```
 
 ## Failed Approaches — DO NOT RETRY
@@ -79,6 +91,8 @@ Stage gate: ✅ PASSED — `tests/integration/test_ir_two_level.cpp` confirms tw
   initializers in the struct definition itself.
 - **`/*comment*/` as range-for variable name**: `for (const auto& /*x*/ : vec)` is
   invalid C++ (comment is not an identifier). Use a named variable + `(void)x;`.
+- **`debug` preset with system compiler**: system default gcc 9.4 cannot compile C++20
+  `= default operator==`. Always use `gcc13-debug` or `clang18-debug` named presets.
 
 ## Key Architecture (quick reference)
 
@@ -87,6 +101,7 @@ include/qfault/
   ir/           GateKind, LogicalGate, LogicalQubit, PatchOp, PatchCoord,
                 MeasBasis, PatchOpKind, IRLevel, QFaultIRModule
   passes/       PassBase, PassContext, PassManager, NoOpPass
+                synthesis/  (Stage 2 — not yet implemented)
   frontend/     Lexer, Parser (ParseResult)
   util/         Overload (std::visit helper)
 src/qfault/
@@ -97,4 +112,7 @@ tests/
                 test_PassBase, test_PassContext, test_PassManager,
                 test_Lexer, test_Parser
   integration/  test_ir_two_level, test_noop_roundtrip, test_qasm_roundtrip
+docs/phases/
+  stage-1-ir-pass-manager/  spec, todo (✅), kickoff, exit-report, prompt_plan
+  stage-2-synthesis/        spec, todo, kickoff  ← NEW
 ```

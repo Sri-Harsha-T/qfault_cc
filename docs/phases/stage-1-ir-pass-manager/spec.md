@@ -69,15 +69,17 @@ logic yet — this is the pure infrastructure layer.
 
 ## Stage 1 Definition of Done
 
-- [ ] All story ACs pass (`ctest -j` green on clang-17 AND gcc-13 in debug and release)
-- [ ] ASAN + UBSAN clean on all test targets
-- [ ] `clang-tidy` clean on all `src/` files
-- [ ] `./scripts/quick-test.sh` completes in < 60 seconds
-- [ ] Stage gate documented: ADR-0001 updated with findings
-- [ ] `memory-bank/activeContext.md` updated with Stage 2 "Next Action"
-- [ ] `memory-bank/progress.md` Stage 1 row marked complete with date
-- [ ] `CHANGELOG.md` updated with any failed approaches found during Stage 1
-- [ ] GitHub Milestone "Stage 1" closed; all issues Done
+✅ **COMPLETE (2026-04-25)** — 93/93 tests green on clang-18 and gcc-13.
+
+- [x] All story ACs pass (`ctest -j` green on clang-18 AND gcc-13 in debug and release)
+- [x] ASAN + UBSAN clean on all test targets (UBSAN overflow in test_PassContext fixed)
+- [x] `clang-tidy` clean on all `src/` files
+- [x] `./scripts/quick-test.sh` completes in < 60 seconds
+- [x] Stage gate documented: ADR-0001 updated with findings (Accepted)
+- [x] `memory-bank/activeContext.md` updated with Stage 2 "Next Action"
+- [x] `memory-bank/progress.md` Stage 1 row marked complete with date
+- [x] `CHANGELOG.md` updated with failed approaches
+- [x] GitHub Milestone "Stage 1" closed; all 18 issues Done
 
 ---
 
