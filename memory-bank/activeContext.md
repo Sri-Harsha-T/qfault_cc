@@ -10,7 +10,7 @@ _Last updated: 2026-04-25 — Stage 2 fully implemented; all 10 issues closed; 1
 
 ## Current Phase
 
-**Stage 2 of 5: Synthesis Pass (T-Gate)** ← NEXT TO START
+**Stage 2 of 5: Synthesis Pass (T-Gate)** — Code complete; gate pending GridSynth install
 Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 issues Done.
 
 ## Active Story
@@ -45,7 +45,9 @@ Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 iss
 
 **Test count: 93/93 green on gcc-13 and clang-18 with -Werror and ASAN+UBSAN**
 
-### Stage 2 (PLANNED, not started)
+**Stage 2 test count: 118/118 green on gcc-13, clang-18, clang-18-asan (2 skipped — no GridSynth binary)**
+
+### Stage 2 (CODE COMPLETE — gate pending GridSynth)
 - ✅ Stage 2 spec written: `docs/phases/stage-2-synthesis/spec.md`
 - ✅ Stage 2 todo written: `docs/phases/stage-2-synthesis/todo.md`
 - ✅ Stage 2 kickoff written: `docs/phases/stage-2-synthesis/kickoff.md`
@@ -68,15 +70,15 @@ Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 iss
 
 | Date | Decision | ADR |
 |------|----------|-----|
-| 2026-04-24 | Use ccpm for project management | — |
-| 2026-04-24 | GridSynth as default synthesiser; SK as benchmark only | ADR-0004 (draft) |
-| 2026-04-24 | Global code distance d for v0.1; variable-d deferred | ADR-0003 (draft) |
-| 2026-04-24 | Concepts over virtual inheritance for SynthesisProvider | ADR-0002 (draft) |
-| 2026-04-25 | ADR-0001 confirmed: variant<LogicalGate,PatchOp> viable, no structural incompatibility | ADR-0001 accepted |
+| 2026-04-25 | TGateSynthesisPass inherits PassBase (virtual at pass level, not gate level) | ADR-0002 impl |
+| 2026-04-25 | SKProvider uses depth-7 BFS basic set (~512 entries); not full depth-3 SK recursion | — |
+| 2026-04-25 | spec "no T remain" assertion requires CliffordOnlyProvider mock, not SK/GridSynth | — |
+| 2026-04-25 | quick-test.sh fixed to use gcc13-debug preset (system gcc 9.4 can't compile C++20) | — |
+| 2026-04-25 | ADR-0001 confirmed: variant<LogicalGate,PatchOp> viable | ADR-0001 accepted |
 
 ## Open Blockers
 
-None. Stage 1 is fully closed.
+- **GridSynth binary not installed** — required to run `test_TCountValidation` and `bench-synthesis.sh` for Stage 2 formal gate sign-off. Install from https://github.com/kenmcken/newsynth before running `/phase-exit`.
 
 ## Next Action — Start Here on Next Session
 
@@ -103,6 +105,10 @@ None. Stage 1 is fully closed.
   invalid C++ (comment is not an identifier). Use a named variable + `(void)x;`.
 - **`debug` preset with system compiler**: system default gcc 9.4 cannot compile C++20
   `= default operator==`. Always use `gcc13-debug` or `clang18-debug` named presets.
+- **`quick-test.sh` was hardcoded to `build/debug`**: same issue. Fixed to use
+  `gcc13-debug` by default (overridable via `QFAULT_PRESET` env var).
+- **"no T remain" integration test with SKProvider**: SKProvider returns `{T}` for
+  R_z(π/4) (exact answer). Use `CliffordOnlyProvider` mock in the test instead.
 
 ## Key Architecture (quick reference)
 
@@ -111,7 +117,8 @@ include/qfault/
   ir/           GateKind, LogicalGate, LogicalQubit, PatchOp, PatchCoord,
                 MeasBasis, PatchOpKind, IRLevel, QFaultIRModule
   passes/       PassBase, PassContext, PassManager, NoOpPass
-                synthesis/  (Stage 2 — not yet implemented)
+                synthesis/  SynthesisProvider (Concept), GridSynthProvider,
+                            SKProvider, TGateSynthesisPass
   frontend/     Lexer, Parser (ParseResult)
   util/         Overload (std::visit helper)
 src/qfault/
@@ -121,8 +128,11 @@ tests/
   unit/         test_LogicalGate, test_PatchOp, test_QFaultIRModule,
                 test_PassBase, test_PassContext, test_PassManager,
                 test_Lexer, test_Parser
-  integration/  test_ir_two_level, test_noop_roundtrip, test_qasm_roundtrip
+  integration/  test_ir_two_level, test_noop_roundtrip, test_qasm_roundtrip,
+                test_synthesis_roundtrip
+src/qfault/
+  passes/synthesis/  GridSynthProvider.cpp, SKProvider.cpp
 docs/phases/
   stage-1-ir-pass-manager/  spec, todo (✅), kickoff, exit-report, prompt_plan
-  stage-2-synthesis/        spec, todo, kickoff  ← NEW
+  stage-2-synthesis/        spec, todo (✅ code), kickoff, prompt_plan
 ```

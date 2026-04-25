@@ -2,19 +2,23 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_DIR="$ROOT/build/debug"
+
+# Use gcc13-debug by default; override with QFAULT_PRESET env var.
+# The generic 'debug' preset uses system gcc 9.4 which cannot compile C++20.
+PRESET="${QFAULT_PRESET:-gcc13-debug}"
+BUILD_DIR="$ROOT/build/${PRESET}"
 
 # Prefer pip-installed cmake (3.21+ required for preset support)
 CMAKE="${HOME}/.local/bin/cmake"
 [[ -x "$CMAKE" ]] || CMAKE="$(command -v cmake)"
 
-echo "=== QFault Quick Test (cmake: $($CMAKE --version | head -1)) ==="
+echo "=== QFault Quick Test (preset: ${PRESET}, cmake: $($CMAKE --version | head -1)) ==="
 START=$SECONDS
 
 # Configure only if build directory doesn't exist
 if [[ ! -f "$BUILD_DIR/CMakeCache.txt" ]]; then
-    echo ">> Configuring debug build..."
-    "$CMAKE" --preset debug -S "$ROOT"
+    echo ">> Configuring ${PRESET} build..."
+    "$CMAKE" --preset "${PRESET}" -S "$ROOT"
 fi
 
 echo ">> Building..."
