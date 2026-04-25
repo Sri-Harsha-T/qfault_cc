@@ -4,7 +4,7 @@
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
 
-_Last updated: 2026-04-25 — Stage 1 fully closed; UBSAN fix committed; Stage 2 plan written_
+_Last updated: 2026-04-25 — Stage 2 GitHub issues #19–#28 created; implementation starting_
 
 ---
 
@@ -15,7 +15,7 @@ Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 iss
 
 ## Active Story
 
-**No active story** — Stage 2 planning complete; ready to open Epic + Issues on GitHub.
+**Issue #19** — 2-A-1: SynthesisProvider C++20 Concept (in progress)
 
 ## State of Work
 
@@ -49,9 +49,10 @@ Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 iss
 - ✅ Stage 2 spec written: `docs/phases/stage-2-synthesis/spec.md`
 - ✅ Stage 2 todo written: `docs/phases/stage-2-synthesis/todo.md`
 - ✅ Stage 2 kickoff written: `docs/phases/stage-2-synthesis/kickoff.md`
-- ⬜ ADRs 0002/0003/0004 finalised (Draft → Accepted)
-- ⬜ Stage 2 Epic + Issues created on GitHub
-- ⬜ Stage 2 implementation begins
+- ✅ ADRs 0002/0003/0004 already Accepted (confirmed 2026-04-25)
+- ✅ Stage 2 Epic + Issues created on GitHub (#19–#28, milestone #7)
+- ✅ Stage 2 prompt_plan.md written: docs/phases/stage-2-synthesis/prompt_plan.md
+- 🔄 Stage 2 implementation: #19 in progress
 
 ## Recent Decisions (last 5 sessions)
 
@@ -73,13 +74,11 @@ None. Stage 1 is fully closed.
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
 2. Run: cmake --preset gcc13-debug && cmake --build build/gcc13-debug -j && ctest --test-dir build/gcc13-debug
    (The generic 'debug' preset uses system gcc 9.4 which cannot compile C++20 — always use named presets)
-3. Start Stage 2:
-   a. /adr — finalise ADR-0002 (SynthesisProvider Concept), ADR-0003, ADR-0004
-   b. /ccpm — create Epic for Stage 2, decompose into GitHub Issues
-   c. Implement Epic 2-A: SynthesisProvider Concept + GridSynthProvider + SKProvider
-   d. Implement Epic 2-B: TGateSynthesisPass<Provider>
-   e. Stage gate: T-count within 1% of GridSynth reference; overhead ≤5%
-4. Stage 2 spec: docs/phases/stage-2-synthesis/spec.md
+3. Resume Stage 2 implementation (issues #19–#28, milestone #7):
+   - Next issue: see "Active Story" above
+   - Execution order: #19 → #26 (parallel: #20, #21) → #22 → #23 → #24 → #25 → #27 → #28 → gate
+   - Prompt plan: docs/phases/stage-2-synthesis/prompt_plan.md
+4. After all issues closed: /phase-exit to run stage gate
 ```
 
 ## Failed Approaches — DO NOT RETRY
