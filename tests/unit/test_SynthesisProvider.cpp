@@ -1,5 +1,8 @@
 #include <qfault/passes/synthesis/SynthesisProvider.hpp>
+#include <qfault/passes/synthesis/GridSynthProvider.hpp>
+#include <qfault/passes/synthesis/SKProvider.hpp>
 #include <qfault/ir/GateKind.hpp>
+#include <qfault/passes/PassContext.hpp>
 
 #include <gtest/gtest.h>
 
@@ -35,6 +38,10 @@ struct MissingSynthesize {
 
 static_assert(qfault::SynthesisProvider<MockProvider>,
               "MockProvider must satisfy SynthesisProvider");
+static_assert(qfault::SynthesisProvider<qfault::SKProvider>,
+              "SKProvider must satisfy SynthesisProvider");
+static_assert(qfault::SynthesisProvider<qfault::GridSynthProvider>,
+              "GridSynthProvider must satisfy SynthesisProvider");
 static_assert(!qfault::SynthesisProvider<NotAProvider>,
               "NotAProvider must NOT satisfy SynthesisProvider");
 static_assert(!qfault::SynthesisProvider<MissingName>,
