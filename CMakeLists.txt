@@ -14,7 +14,7 @@ option(QFAULT_ENABLE_ASAN      "Enable AddressSanitizer + UBSanitizer" OFF)
 option(QFAULT_ENABLE_UBSAN     "Enable UndefinedBehaviourSanitizer"    OFF)
 option(QFAULT_RUN_BENCHMARKS   "Build Google Benchmark targets"        OFF)
 option(QFAULT_ENABLE_PYTHON    "Build pybind11 Python bindings"        OFF)
-set(QFAULT_GRIDSYNTH_PATH "" CACHE STRING "Path to GridSynth binary or library")
+set(QFAULT_GRIDSYNTH_PATH "" CACHE STRING "Override path to GridSynth binary")
 
 # ── Compiler flags ─────────────────────────────────────────────────────────────
 add_compile_options(-Wall -Wextra -Wpedantic)
@@ -60,6 +60,22 @@ if(QFAULT_RUN_BENCHMARKS)
     FetchContent_MakeAvailable(benchmark)
 endif()
 
+# ── GridSynth optional binary ──────────────────────────────────────────────────
+if(QFAULT_GRIDSYNTH_PATH)
+    set(GRIDSYNTH_BINARY "${QFAULT_GRIDSYNTH_PATH}")
+    message(STATUS "GridSynth (override): ${GRIDSYNTH_BINARY}")
+else()
+    find_program(GRIDSYNTH_BINARY gridsynth)
+endif()
+
+if(GRIDSYNTH_BINARY)
+    message(STATUS "GridSynth found: ${GRIDSYNTH_BINARY}")
+    set(QFAULT_HAS_GRIDSYNTH ON CACHE BOOL "GridSynth binary found" FORCE)
+else()
+    message(WARNING "GridSynth not found. GridSynth-dependent tests will be skipped.")
+    message(WARNING "Falling back to Solovay-Kitaev (not T-optimal) for production use.")
+endif()
+
 # ── Library: libqfault ─────────────────────────────────────────────────────────
 # Re-run cmake configure when new .cpp files are added (GLOB_RECURSE is evaluated
 # at configure time, not build time).
@@ -78,6 +94,12 @@ target_include_directories(libqfault
 
 target_compile_features(libqfault PUBLIC cxx_std_20)
 
+if(GRIDSYNTH_BINARY)
+    target_compile_definitions(libqfault PUBLIC
+        GRIDSYNTH_BINARY="${GRIDSYNTH_BINARY}"
+        QFAULT_HAS_GRIDSYNTH=1)
+endif()
+
 # ── Test binary: qfault_tests ──────────────────────────────────────────────────
 enable_testing()
 
@@ -90,6 +112,12 @@ if(QFAULT_TEST_SOURCES)
     add_executable(qfault_tests ${QFAULT_TEST_SOURCES})
     target_link_libraries(qfault_tests PRIVATE libqfault GTest::gtest_main)
     target_include_directories(qfault_tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
+    if(GRIDSYNTH_BINARY)
+        target_compile_definitions(qfault_tests PRIVATE
+            GRIDSYNTH_BINARY="${GRIDSYNTH_BINARY}"
+            QFAULT_HAS_GRIDSYNTH=1)
+    endif()
 
     include(GoogleTest)
     gtest_discover_tests(qfault_tests)
