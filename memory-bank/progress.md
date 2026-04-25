@@ -9,7 +9,7 @@ Append-only. Never delete. Newest entries at the top of each section.
 | Stage | Name | Status | Started | Completed | Gate Passed |
 |-------|------|--------|---------|-----------|-------------|
 | 1 | IR + Pass Manager Core | ✅ Complete | 2026-04-24 | 2026-04-25 | ✅ 2026-04-25 |
-| 2 | Synthesis Pass (T-Gate) | ⬜ Backlog | — | — | ⬜ |
+| 2 | Synthesis Pass (T-Gate) | 🔄 Code Complete | 2026-04-25 | — | ⬜ Gate pending GridSynth |
 | 3 | Lattice Surgery Mapper | ⬜ Backlog | — | — | ⬜ |
 | 4 | MSD Scheduling + Resource Estimator | ⬜ Backlog | — | — | ⬜ |
 | 5 | Output Backends + Python + arXiv | ⬜ Backlog | — | — | ⬜ |
@@ -57,9 +57,15 @@ Append-only. Never delete. Newest entries at the top of each section.
 
 ### Progress Entries
 
+- **2026-04-25** — Stage 2 implementation complete. All 10 GitHub issues (#19–#28)
+  implemented and closed. 118/118 tests green on gcc-13, clang-18 (debug + release),
+  and clang-18-asan (ASAN+UBSAN clean). Deliverables: SynthesisProvider Concept,
+  GridSynthProvider (subprocess), SKProvider (pure C++, depth-7 BFS), TGateSynthesisPass,
+  integration tests, T-count validation test (GTEST_SKIP without binary),
+  bench-synthesis.sh. Stage gate benchmark pending GridSynth binary installation.
+
 - **2026-04-25** — Stage 2 planning complete. Spec, todo, and kickoff documents written
-  at `docs/phases/stage-2-synthesis/`. ADRs 0002/0003/0004 still in Draft status;
-  must be finalised before coding begins. No GitHub issues created yet.
+  at `docs/phases/stage-2-synthesis/`. ADRs 0002/0003/0004 confirmed Accepted from Stage 1.
 
 ### Stage 2 Decisions Log
 

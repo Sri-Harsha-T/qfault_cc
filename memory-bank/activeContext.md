@@ -4,7 +4,7 @@
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
 
-_Last updated: 2026-04-25 — Stage 2 GitHub issues #19–#28 created; implementation starting_
+_Last updated: 2026-04-25 — Stage 2 fully implemented; all 10 issues closed; 118 tests green_
 
 ---
 
@@ -15,7 +15,7 @@ Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 iss
 
 ## Active Story
 
-**Issue #19** — 2-A-1: SynthesisProvider C++20 Concept (in progress)
+**No active story** — Stage 2 implementation complete; all 10 issues closed.
 
 ## State of Work
 
@@ -49,10 +49,20 @@ Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 iss
 - ✅ Stage 2 spec written: `docs/phases/stage-2-synthesis/spec.md`
 - ✅ Stage 2 todo written: `docs/phases/stage-2-synthesis/todo.md`
 - ✅ Stage 2 kickoff written: `docs/phases/stage-2-synthesis/kickoff.md`
-- ✅ ADRs 0002/0003/0004 already Accepted (confirmed 2026-04-25)
+- ✅ ADRs 0002/0003/0004 Accepted
 - ✅ Stage 2 Epic + Issues created on GitHub (#19–#28, milestone #7)
 - ✅ Stage 2 prompt_plan.md written: docs/phases/stage-2-synthesis/prompt_plan.md
-- 🔄 Stage 2 implementation: #19 in progress
+- ✅ #19: SynthesisProvider C++20 Concept (commit 90cc12d)
+- ✅ #20: GridSynthProvider subprocess wrapper (commit eb441cb)
+- ✅ #21: SKProvider Solovay-Kitaev pure C++ (commit eb441cb)
+- ✅ #22: Concept static_asserts for all providers (commit 0e285f2)
+- ✅ #23: TGateSynthesisPass<Provider> template pass (commit 0e285f2)
+- ✅ #24: Integration test — synthesis round-trip (commit 0e285f2)
+- ✅ #25: T-count validation test (GTEST_SKIP when no binary) (commit 2a487b4)
+- ✅ #26: CMake GridSynth detection + QFAULT_HAS_GRIDSYNTH (commit eb441cb)
+- ✅ #27: GTEST_SKIP() guards verified on all GridSynth tests (commit 2a487b4)
+- ✅ #28: scripts/bench-synthesis.sh stage gate benchmark (commit 2a487b4)
+- ⬜ Stage gate formal sign-off (requires GridSynth binary installed)
 
 ## Recent Decisions (last 5 sessions)
 
@@ -73,12 +83,13 @@ None. Stage 1 is fully closed.
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
 2. Run: cmake --preset gcc13-debug && cmake --build build/gcc13-debug -j && ctest --test-dir build/gcc13-debug
-   (The generic 'debug' preset uses system gcc 9.4 which cannot compile C++20 — always use named presets)
-3. Resume Stage 2 implementation (issues #19–#28, milestone #7):
-   - Next issue: see "Active Story" above
-   - Execution order: #19 → #26 (parallel: #20, #21) → #22 → #23 → #24 → #25 → #27 → #28 → gate
-   - Prompt plan: docs/phases/stage-2-synthesis/prompt_plan.md
-4. After all issues closed: /phase-exit to run stage gate
+3. Stage 2 gate (requires GridSynth binary):
+   a. Install GridSynth: https://github.com/kenmcken/newsynth (or brew install gridsynth)
+   b. cmake --preset gcc13-release && cmake --build build/gcc13-release -j
+   c. Run: ./scripts/bench-synthesis.sh build/gcc13-release  → overhead ≤5%
+   d. ctest --test-dir build/gcc13-release -R TCountValidation  → within 1%
+   e. /phase-exit to formally close Stage 2 and write exit-report.md
+4. Then begin Stage 3: Lattice Surgery Mapper
 ```
 
 ## Failed Approaches — DO NOT RETRY

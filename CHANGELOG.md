@@ -36,12 +36,15 @@ The "Failed Approaches" section is **mandatory reading** — do not retry listed
 - [x] GitHub Actions CI (4-way matrix + ASAN job)
 - [x] UBSAN overflow fix in test_PassContext
 
-### Stage 2: Synthesis Pass (T-Gate)
-- [ ] `SynthesisProvider` interface defined
-- [ ] GridSynth wrapped as primary provider
-- [ ] Solovay-Kitaev as baseline/benchmark provider
-- [ ] T-count validated against published GridSynth benchmarks
-- [ ] Stage 2 gate: abstraction overhead ≤5% vs direct GridSynth call on 1000-gate circuit
+### Stage 2: Synthesis Pass (T-Gate) — Code Complete (2026-04-25)
+- [x] `SynthesisProvider` C++20 Concept defined (#19)
+- [x] `GridSynthProvider` subprocess wrapper (#20)
+- [x] `SKProvider` Solovay-Kitaev pure C++, depth-7 BFS (#21)
+- [x] `TGateSynthesisPass<Provider>` template pass + integration test (#23 #24)
+- [x] CMake GridSynth optional dependency + GTEST_SKIP() guards (#26 #27)
+- [x] T-count validation test (skipped without binary) (#25)
+- [x] `scripts/bench-synthesis.sh` overhead benchmark (#28)
+- [ ] Stage 2 gate: T-count within 1% + overhead ≤5% (pending GridSynth install)
 
 ### Stage 3: Lattice Surgery Mapper
 - [ ] Logical CNOT → patch merge/split sequences
