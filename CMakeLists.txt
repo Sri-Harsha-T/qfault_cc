@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 project(qfault VERSION 0.1.0 LANGUAGES CXX)
 
+# ── Dependency version pins (single source of truth — per ADR-0017) ────────────
+include(cmake/dependency_versions.cmake)
+
 # ── Language standard ──────────────────────────────────────────────────────────
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,6 +17,8 @@ option(QFAULT_ENABLE_ASAN      "Enable AddressSanitizer + UBSanitizer" OFF)
 option(QFAULT_ENABLE_UBSAN     "Enable UndefinedBehaviourSanitizer"    OFF)
 option(QFAULT_RUN_BENCHMARKS   "Build Google Benchmark targets"        OFF)
 option(QFAULT_ENABLE_PYTHON    "Build pybind11 Python bindings"        OFF)
+option(QFAULT_ENABLE_STIM      "Build Stim oracle integration (Stage 2.5)" OFF)
+option(QFAULT_ENABLE_QCEC      "Build MQT QCEC bridge (Stage 2.5)"    OFF)
 set(QFAULT_GRIDSYNTH_PATH "" CACHE STRING "Override path to GridSynth binary")
 
 # ── Compiler flags ─────────────────────────────────────────────────────────────
@@ -42,7 +47,7 @@ set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/_deps")
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        v1.14.0
+    GIT_TAG        ${QFAULT_GTEST_TAG}
     GIT_SHALLOW    TRUE
 )
 # Prevent GoogleTest from overriding our compiler/linker settings
@@ -53,11 +58,21 @@ if(QFAULT_RUN_BENCHMARKS)
     FetchContent_Declare(
         benchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG        v1.8.3
+        GIT_TAG        ${QFAULT_BENCHMARK_TAG}
         GIT_SHALLOW    TRUE
     )
     set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(benchmark)
+endif()
+
+# ── Stim oracle (Stage 2.5) ────────────────────────────────────────────────────
+if(QFAULT_ENABLE_STIM)
+    include(cmake/stim_config.cmake)
+endif()
+
+# ── MQT QCEC bridge (Stage 2.5) ───────────────────────────────────────────────
+if(QFAULT_ENABLE_QCEC)
+    include(cmake/qcec_config.cmake)
 endif()
 
 # ── GridSynth optional binary ──────────────────────────────────────────────────
@@ -119,6 +134,14 @@ if(QFAULT_TEST_SOURCES)
             QFAULT_HAS_GRIDSYNTH=1)
     endif()
 
+    if(QFAULT_ENABLE_STIM)
+        qfault_link_stim(qfault_tests)
+    endif()
+
+    if(QFAULT_ENABLE_QCEC)
+        qfault_link_qcec(qfault_tests)
+    endif()
+
     include(GoogleTest)
     gtest_discover_tests(qfault_tests)
 else()
@@ -144,7 +167,7 @@ if(QFAULT_ENABLE_PYTHON)
     FetchContent_Declare(
         pybind11
         GIT_REPOSITORY https://github.com/pybind/pybind11.git
-        GIT_TAG        v2.11.1
+        GIT_TAG        ${QFAULT_PYBIND11_TAG}
         GIT_SHALLOW    TRUE
     )
     FetchContent_MakeAvailable(pybind11)

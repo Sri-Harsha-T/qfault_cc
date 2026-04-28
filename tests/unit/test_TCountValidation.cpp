@@ -24,14 +24,17 @@ TEST(TCountValidation, SkippedWhenGridSynthAbsent) {
 
 #else // QFAULT_HAS_GRIDSYNTH
 
-// Published T-counts for eps=1e-10 (approximate; verified from GridSynth v1.0).
-// Source: Ross & Selinger 2016, arXiv:1403.2975, Table 1.
+// Actual T-counts from newsynth 0.3.0.4 with -e 1e-10 -p (up to global phase).
+// Global phase is irrelevant in QEC contexts; -p gives the T-optimal decomposition.
+// Verified empirically: lower_bound == T-count for all entries (provably optimal).
+// Note: generic angles at eps=1e-10 require ~3*log2(1/eps)≈100 T-gates (expected).
+//       Rz(pi/4) = T gate (exactly), so T-count=1 up to global phase.
 static constexpr std::array<RefEntry, 5> kReference = {{
-    {std::numbers::pi / 4.0,        3,  "pi/4"},
-    {std::numbers::pi / 8.0,        7,  "pi/8"},
-    {std::numbers::pi / 16.0,       9,  "pi/16"},
-    {std::numbers::pi / 32.0,      13,  "pi/32"},
-    {3.0 * std::numbers::pi / 8.0,  7,  "3pi/8"},
+    {std::numbers::pi / 4.0,         1, "pi/4"},
+    {std::numbers::pi / 8.0,        98, "pi/8"},
+    {std::numbers::pi / 16.0,      100, "pi/16"},
+    {std::numbers::pi / 32.0,      100, "pi/32"},
+    {3.0 * std::numbers::pi / 8.0,  98, "3pi/8"},
 }};
 
 namespace {

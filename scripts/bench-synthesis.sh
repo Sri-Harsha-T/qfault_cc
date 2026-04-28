@@ -39,8 +39,8 @@ echo ""
 echo "Measuring baseline (direct gridsynth calls)..."
 BASELINE_START=$(date +%s%N)
 for ((i = 0; i < N_T_GATES; i++)); do
-    # Synthesise R_z(pi/4) for each T gate
-    "${GRIDSYNTH}" -- 0.7853981633974483 -e "${EPS}" > /dev/null
+    # Synthesise R_z(pi/4) for each T gate (-p: up to global phase; options before angle)
+    "${GRIDSYNTH}" -e "${EPS}" -p 0.7853981633974483 > /dev/null
 done
 BASELINE_END=$(date +%s%N)
 BASELINE_MS=$(( (BASELINE_END - BASELINE_START) / 1000000 ))

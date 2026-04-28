@@ -2,6 +2,8 @@
 
 #include <array>
 #include <cstdio>
+#include <iomanip>
+#include <limits>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -43,8 +45,12 @@ std::optional<std::vector<GateKind>> parseGridSynthOutput(const std::string& out
 std::optional<std::string> runGridSynth(const char* binary,
                                         double angle,
                                         double eps) {
+    // -p: decompose up to global phase (global phase is irrelevant in QEC contexts)
+    // Full precision is required: default ostringstream truncates to 6 sig figs,
+    // giving gridsynth a slightly wrong angle and non-optimal T-counts.
     std::ostringstream cmd;
-    cmd << "\"" << binary << "\" -- " << angle << " -e " << eps << " 2>/dev/null";
+    cmd << std::setprecision(std::numeric_limits<double>::max_digits10);
+    cmd << "\"" << binary << "\" -e " << eps << " -p " << angle << " 2>/dev/null";
     const std::string cmdStr = cmd.str();
 
     // NOLINTNEXTLINE(cert-env33-c) — controlled binary path from build system
