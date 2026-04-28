@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using the metadata below.
+  When the v0.1.0 release is tagged, a Zenodo DOI will be minted and
+  this file will be updated to include the `doi:` field per ADR-0017.
+
+title: "QFault: a fault-tolerant quantum compiler for the surface code"
+type: software
+authors:
+  - family-names: "Thota"
+    given-names: "Sri Harsha"
+    affiliation: "(see GitHub for current affiliation)"
+
+repository-code: "https://github.com/Sri-Harsha-T/qfault_cc"
+url:             "https://github.com/Sri-Harsha-T/qfault_cc"
+abstract: >-
+  QFault is a modular C++20 compiler-pass library that takes a logical
+  Clifford+T quantum circuit and compiles it to fault-tolerant surface-code
+  execution sequences, outputting OpenQASM 3.0 or QIR bytecode. It targets
+  QEC researchers and quantum systems engineers who currently glue several
+  separate tools (Stim, GridSynth, PyLIQTR, newsynth) by hand.
+
+keywords:
+  - quantum computing
+  - quantum error correction
+  - surface code
+  - lattice surgery
+  - magic state distillation
+  - compiler
+  - fault-tolerant quantum computing
+
+license: Apache-2.0
+
+# When v0.1.0 is tagged on GitHub, Zenodo will assign a DOI; uncomment and
+# fill in. See ADR-0017 § "Zenodo DOI workflow".
+# version: "0.1.0"
+# doi:     "10.5281/zenodo.XXXXXXX"
+# date-released: "YYYY-MM-DD"
+
+# Preferred bibliographic citation (placeholder; update at v0.1.0 release).
+preferred-citation:
+  type: software
+  title: "QFault: a fault-tolerant quantum compiler for the surface code"
+  authors:
+    - family-names: "Thota"
+      given-names: "Sri Harsha"
+  url: "https://github.com/Sri-Harsha-T/qfault_cc"

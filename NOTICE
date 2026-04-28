@@ -1,0 +1,64 @@
+QFault
+Copyright 2026 Sri Harsha Thota
+
+This product includes software developed by Sri Harsha Thota,
+licensed under the Apache License, Version 2.0 (see LICENSE).
+
+────────────────────────────────────────────────────────────────────────────────
+Third-party dependencies and their licenses
+────────────────────────────────────────────────────────────────────────────────
+
+This product depends on, but does not redistribute, the following third-party
+software. Each is fetched at build time via CMake `FetchContent`.
+
+1. GoogleTest (https://github.com/google/googletest)
+   License: BSD-3-Clause
+   Used for unit and integration testing.
+
+2. Google Benchmark (https://github.com/google/benchmark)
+   License: Apache-2.0
+   Used for micro-benchmarking (gated by QFAULT_RUN_BENCHMARKS=ON).
+
+3. Stim (https://github.com/quantumlib/Stim)
+   License: Apache-2.0
+   Used as a stabiliser-simulation oracle for validation (Stage 2.5+).
+
+4. MQT QCEC (https://github.com/cda-tum/mqt-qcec)
+   License: MIT
+   Used for logical equivalence checking (Stage 2.5+).
+
+5. pybind11 (https://github.com/pybind/pybind11)
+   License: BSD-3-Clause
+   Used for Python bindings (Stage 5; QFAULT_ENABLE_PYTHON=ON).
+
+6. GridSynth / newsynth (https://github.com/kenmcken/newsynth)
+   License: BSD-3-Clause
+   Wrapped at runtime as an external binary for T-gate synthesis. Not
+   redistributed; see ADR-0013 for the v0.1 caveat that this is a popen
+   wrapper (not native C++) and Stage 6 for the native replacement plan.
+
+────────────────────────────────────────────────────────────────────────────────
+Excluded by design
+────────────────────────────────────────────────────────────────────────────────
+
+The following projects were considered as dependencies and **explicitly not
+adopted** for license-compatibility reasons (per ADR-0015):
+
+- liblsqecc (https://github.com/latticesurgery-com/liblsqecc)
+  License: GPL-3.0-or-later
+  Reason for exclusion: GPL-3.0 is incompatible with our Apache 2.0 licence.
+  We re-implement A* lattice surgery routing in Stage 3 instead of vendoring.
+
+────────────────────────────────────────────────────────────────────────────────
+Reference works (cited; no code redistribution)
+────────────────────────────────────────────────────────────────────────────────
+
+- Litinski, "A game of surface codes" (2019, arXiv:1808.02892) — layout templates.
+- Beverland et al., "Assessing requirements to scale to practical quantum
+  advantage" (2022, arXiv:2211.07629) — MSD factory catalog.
+- Bravyi & Haah, "Magic-state distillation with low overhead" (2012,
+  arXiv:1209.2426) — 116-to-12 distillation protocol.
+- Silva et al. (2024) — earliest-available-factory scheduling.
+- Ross & Selinger, "Optimal ancilla-free Clifford+T approximation of z-rotations"
+  (2016, arXiv:1403.2975) — GridSynth algorithm.
+- Kliuchnikov (2023) — improved synthesis (target for Stage 6).
