@@ -22,35 +22,37 @@ glue 4–5 tools (Stim, GridSynth, PyLIQTR, newsynth) manually.
 
 ## Build, test, lint
 
-> **Status:** CMakeLists.txt not yet written (Stage 1, Epic 1-D). Scripts below are
-> stubs. `scripts/benchmark.sh` does not exist yet — do not reference it.
+> **Status (post-v0.2 audit, 2026-04-26):** Stages 1+2 shipped. Stage 3 active.
+> Stage 2.5 (Verify+Bench), Stage 6 (Native Synthesis), Stage 7 (Formal/MLIR
+> Stretch) added per audit. See ROADMAP.md and `docs/adr/README.md`.
 
-Once CMakeLists.txt exists, use these cmake preset commands:
+Cmake preset commands:
 ```bash
-cmake --preset debug                   # configure debug build
-cmake --build build/debug -j           # build
-ctest --test-dir build/debug -j        # run all tests
+cmake --preset gcc13-debug                    # configure debug build
+cmake --build build/gcc13-debug -j            # build
+ctest --test-dir build/gcc13-debug -j         # run all tests
 
-cmake --preset release && cmake --build build/release -j
-cmake --preset asan && cmake --build build/asan -j  # address + UB sanitizers
+cmake --preset clang18-release && cmake --build build/clang18-release -j
+cmake --preset clang18-asan    && cmake --build build/clang18-asan -j
 ```
 
-Pre-commit and CI wrappers (will be filled in during 1-D):
+Pre-commit and CI wrappers:
 ```bash
 ./scripts/quick-test.sh        # <60s — run before every commit
 ./scripts/full-build.sh        # full CMake build, both clang and gcc
 ./scripts/asan-ubsan.sh        # address + undefined-behaviour sanitizers
-./scripts/compare-stim.sh      # reference diff vs Stim oracle
+./scripts/compare-stim.sh      # Stim oracle (Stage 2.5; stub through Stage 2)
+./scripts/qcec-equivalence.sh  # MQT QCEC equivalence check (Stage 2.5)
+./scripts/bench-synthesis.sh   # Stage 2 gate benchmark (overhead ≤5%)
 ```
 
 Static analysis (run on changed files before any PR):
 ```bash
 clang-tidy --config-file=.clang-tidy src/
-cppcheck --enable=all --suppress=missingInclude src/
 ```
 
 CMake minimum: 3.21 (presets). Local install: `~/.local/bin/cmake` (pip). Scripts auto-detect it.
-Compilers: clang-17+ and gcc-13+ must both build clean (CI); gcc-9 is insufficient.
+Compilers: clang-18 and gcc-13 must both build clean (CI); gcc-9 is insufficient.
 
 ## Source directory layout
 
@@ -58,28 +60,33 @@ Compilers: clang-17+ and gcc-13+ must both build clean (CI); gcc-9 is insufficie
 src/qfault/
   ir/           # QFaultIR data structures (Stage 1)
   passes/       # PassManager + all compiler passes
-    synthesis/  # SynthesisProvider Concept + GridSynth/SK providers (Stage 2)
-    lattice/    # LatticeSurgeryPass (Stage 3)
-    msd/        # MSDSchedulerPass (Stage 4)
+    synthesis/  # SynthesisProvider Concept + GridSynth/BFS-table providers (Stage 2)
+                # + native Ross-Selinger / Kliuchnikov providers (Stage 6)
+    lattice/    # LatticeSurgeryPass: A* router + Litinski templates (Stage 3)
+    msd/        # MSDSchedulerPass with Beverland 2022 catalog (Stage 4)
     estimate/   # ResourceEstimatorPass (Stage 4)
+    optimise/   # PhasePolyZXPass (post-v0.1, ADR-0011 Draft)
   frontend/     # QASM 3.0 parser (Stage 1, subset)
-  backend/      # QASM 3.0 + QIR emitters (Stage 5)
+  backend/      # QASM 3.0 + QIR + Stim native emitters (Stage 5)
   util/         # Logging, error types, diagnostics
+  verify/       # Stim + QCEC harness wrappers (Stage 2.5)
 include/qfault/ # Public headers only (pimpl where appropriate)
+mlir/           # qfault.fto MLIR dialect (Stage 7 Option A only)
+proofs/         # Coq / Rocq sources (Stage 7 Option B only)
 tests/
   unit/         # Per-class GoogleTest files (test_<classname>.cpp)
   integration/  # End-to-end circuit → QIR → Stim round-trips
   benchmarks/   # Google Benchmark (gated by QFAULT_RUN_BENCHMARKS=ON)
   reference/    # Committed golden Stim outputs — diff on CI, never modify without review
-bindings/python/ # pybind11 bindings (Stage 5 only)
+bindings/python/ # pybind11 bindings (Stage 5 only; ADR-0012)
+papers/         # arXiv source + figures (Stage 5; per ADR-0017)
 ```
 
 ## Active stage
 
-**Stage 1 of 5: IR + Pass Manager Core** (`docs/phases/stage-1-ir-pass-manager/`)
-- Spec (epics, stories, ACs, prompt plan): `docs/phases/stage-1-ir-pass-manager/spec.md`
-- Daily todo tracker: `docs/phases/stage-1-ir-pass-manager/todo.md`
-- Execution order: **1-D (build system) first**, then 1-A (IR types), 1-B (PassManager), 1-C (parser)
+**Stage 3 of 7: Lattice Surgery Mapper** (`docs/phases/stage-3-lattice/`).
+Stages 1+2 complete; Stage 2.5 / 6 / 7 are post-Stage-3 / post-Stage-5
+deliverables added in the v0.2 audit.
 
 ## Two-level IR — central invariant
 
@@ -107,10 +114,16 @@ See ADR-0001 and `docs/architecture.md` for the full design rationale.
 - Pauli enum: `I=0, X=1, Y=2, Z=3`
 - Rotated surface code is the only target for v0.1 (not toric, not colour code)
 - Physical qubits per patch at distance d: `2d² − 1` (d² data + d²−1 measure)
-- MSD factory footprint (15-to-1): approximately `(4d+1) × (8d+1)` data patches
+- BV-10 d=5 reference: 11 logical × (2d²−1) = 539 base + routing → 600–800 physical
+- MSD factory footprint (Beverland 2022 Table VII): see ADR-0007
 - MERGE always pairs matching boundaries (X↔X or Z↔Z) — mixing is a logic error, add assertion
-- GridSynth is the default synthesis provider (ADR-0004) — do NOT change this default
+- GridSynth is the default synthesis provider (ADR-0004) — do NOT change this default,
+  but be aware it is a `popen` wrapper around the Haskell binary in v0.1 (ADR-0013)
 - Synthesis ε = 1e-10 by default — read from `PassContext`, never hardcode
+- Litinski 2019 layout templates: compact 1.5n+3 / 9τ; intermediate 2n+4 / 5τ
+  (Fig 13a says 2.5n+4; the body says 2n+4 — use the body value); fast 2n+√(8n)+1 / 1τ
+- Stim library target is `libstim` (NOT `stim`); `SIMD_WIDTH=64` for reproducibility
+- liblsqecc is GPL-3.0 — incompatible with our Apache 2.0 (ADR-0015); do NOT vendor it
 
 ## Architecture pointers (load only when relevant)
 
@@ -122,19 +135,31 @@ See ADR-0001 and `docs/architecture.md` for the full design rationale.
 
 ## Decided ADRs (do not re-open without a new ADR)
 
-| ADR | Decision |
-|-----|----------|
-| ADR-0001 | Two-level IR: single `QFaultIRModule` with `variant<LogicalGate, PatchOp>` |
-| ADR-0002 | `SynthesisProvider` via C++20 Concept, not virtual base |
-| ADR-0003 | Global code distance `d` for v0.1; variable-d deferred to v0.2 |
-| ADR-0004 | GridSynth as default synthesiser; SK as benchmark baseline only |
-
-ADR-0005 (QIR spec pinning) and ADR-0006 (routing algorithm) are still **Draft** — write them before Stage 5 and Stage 3 respectively.
+| ADR | Status | Decision |
+|-----|--------|----------|
+| ADR-0001 | Accepted | Two-level IR: single `QFaultIRModule` with `variant<LogicalGate, PatchOp>` |
+| ADR-0002 | Accepted | `SynthesisProvider` via C++20 Concept, not virtual base |
+| ADR-0003 | Accepted | Global code distance `d` for v0.1; variable-d deferred to v0.2 |
+| ADR-0004 | Accepted (with limitation) | GridSynth as default synthesiser; superseded in part by ADR-0013 |
+| ADR-0005 | Accepted | QIR Alliance v0.1 base profile pinning |
+| ADR-0006 | Accepted | Lattice surgery routing: A\* + Litinski templates + Silva 2024 EAF |
+| ADR-0007 | Accepted | MSD factory selection: catalog enumeration with Beverland 2022 cost formulas |
+| ADR-0008 | Accepted | Synthesis algorithm portfolio: Ross-Selinger now, Kliuchnikov-2023 in Stage 6 |
+| ADR-0009 | Accepted | Verification strategy: Stim + MQT QCEC, framed as **validation** not verification |
+| ADR-0010 | Accepted | Output backend portfolio: QASM 3.0 + QIR + Stim native |
+| ADR-0011 | Draft | Phase-polynomial / ZX pass: native AMM + optional PyZX bridge |
+| ADR-0012 | Accepted | Python bindings: pybind11 v2.11.1 for v0.1; revisit nanobind for v0.2 |
+| ADR-0013 | Accepted | SKProvider reframed as fallback / sanity oracle (rename to BFSTableProvider) |
+| ADR-0014 | Accepted | Failed-approach tracking is project policy |
+| ADR-0015 | Accepted | License: Apache 2.0 with explicit patent grant |
+| ADR-0016 | Accepted | Conference target ladder: QCE26 → CGO27 → OOPSLA / PLDI gated on Stage 7 |
+| ADR-0017 | Accepted | Reproducibility infrastructure: Dockerfile + flake.nix + Zenodo + papers/ |
+| ADR-0018 | Draft | MLIR `qfault.fto` dialect (Stage 7 Option A) |
 
 ## Session discipline
 
 - Update `memory-bank/activeContext.md` → "Next Action" before ending any session
-- Log failed approaches to `CHANGELOG.md` under "## Failed Approaches"
+- Log failed approaches to `CHANGELOG.md` under "## Failed Approaches" (per ADR-0014)
 - Propose an ADR (`/adr`) before: adding a dependency, changing a numerical
   convention, switching synthesis algorithms, or changing the IR schema
 - One `in_progress` TodoWrite item at a time
