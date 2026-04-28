@@ -20,6 +20,14 @@ factories sometimes attributed to Beverland 2022 are NOT in that paper.
 appears in derivative Litinski/Microsoft Resource Estimator schemes. This
 ADR tracks them as separate sources.
 
+A finding from the Stage 3 implementation research **must shape this catalog**:
+**Beverland 2022 Appendix C contains only 15-to-1 protocols** (single-level
+space-efficient or Reed-Muller-prep, on physical/surface/Hastings-Haah codes,
+plus two-level concatenations matching the Litinski `(15-to-1)²` pattern).
+**The "116-to-12" factory is not in Beverland — it originates in Bravyi-Haah
+2012 (PRA 86, 052329)**. **The "225-to-1" factory is not in Beverland — it
+appears in Litinski/Microsoft RE derivative schemes.** Targeting either as a
+"Beverland number" is unverifiable and would be flagged in review.
 ---
 
 ## Decision
@@ -35,7 +43,7 @@ Factory selection is greedy: pick the catalog entry minimizing **spacetime
 volume per delivered T-state at the target output error**, then replicate
 to meet demand.
 
-The 15-to-1 cost formulas adopted from Beverland Table VI:
+1. The 15-to-1 cost formulas adopted from Beverland Table VI:
 - Output T-error rate: `35·p_T³ + 7.1·P_Cliff(d)`.
 - Single logical 15-to-1 unit:
   - `N_qubits = 20·n(d) = 40d²` (space-efficient) or `31·n(d)` (RM-prep).
@@ -55,6 +63,16 @@ Logical error model (per Beverland):
 
 Practical threshold: single-level suffices for `P_T ≳ 10⁻¹⁰`; below `10⁻¹²`
 concatenation is required.
+
+2. **15-to-1 two-level concatenations** (Beverland 2022 Table VII, the **three**
+   actually-used factories): P_T = 5.6×10⁻¹¹ at 3,240 qubits / 46.8 µs;
+   P_T = 2.1×10⁻¹⁵ at 16,000 qubits / 83.2 µs;
+   P_T = 5.51×10⁻¹³ at 5,760 qubits / 72.8 µs.
+
+3. **Gidney-Fowler CCZ→2T** (arXiv:1812.01238, explicit improvement over Beverland
+   PSSPC's 4-T-per-Toffoli budget). 12d × 6d footprint, one |CCZ⟩ per 5.5d cycles,
+   catalysed with one |T⟩ to produce two |T⟩. **Adopting this halves T-counts on
+   Toffoli-dominated workloads** versus pure Beverland baseline.
 
 ---
 
@@ -91,9 +109,12 @@ concatenation is required.
 
 **Risks:**
 - Beverland 2022's formulas assume specific physical-error rates and
-  cycle times; QFault must propagate these as `PassContext` fields and
-  reject configurations outside the validated regime
-  (`p ∈ {10⁻³, 10⁻⁴}`, cycle ≈ 1 µs) with a runtime warning.
+cycle times (anchor at p = 10⁻³ conservative / 10⁻⁴ realistic; cycle time 1 µs
+near-term superconducting); QFault must propagate these as `PassContext` fields
+and reject configurations outside the validated regime. Logical error model is
+`P(d) = a·(p/p*)^((d+1)/2)` with `(a, p*) = (0.03, 0.01)` for surface-code
+gate-based; code-distance selection is
+`d = ⌈2·log(aε/3QC) / log(p*/p) − 1⌉` rounded to next odd.
 
 ---
 
@@ -109,7 +130,8 @@ When loading the memory bank:
 - When CCZ→2T catalysis is selected for Toffoli-heavy workloads, the
   effective T-count halves vs Beverland baseline; document this
   prominently in `ResourceReport` output.
-
+- **Two-level recurrence:** `Q_r = 35·Q_{r-1}³ + 7.1·P_r` with `Q_0 = p_T`. Total
+time `τ(D) = Σ τ(M_r)`; total qubits `n(D) = max_r(c_r · n(M_r))`.
 ---
 
 ## References

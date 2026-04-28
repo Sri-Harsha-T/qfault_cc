@@ -1,14 +1,14 @@
 # Tech Context — QFault
 
-## Language & Standard
-- **C++20** — Concepts, ranges, `std::span`, designated initialisers, `consteval`
-- Both **clang-17+** and **gcc-13+** must build and pass tests cleanly
-- `-Wall -Wextra -Wpedantic` with zero warnings; `-Werror` in CI
+## Toolchain
 
-## Build System
-- **CMake ≥ 3.16** with modern target-based dependency graph
-- Presets in `CMakePresets.json`: `debug`, `release`, `asan`, `coverage`
-- Build tree: `build/` (gitignored); never in-source builds
+- **Compilers:** gcc-13 and clang-18 are the supported set; gcc-9 is insufficient
+  (no C++20 `= default operator==`).
+- **CMake:** ≥ 3.21 (presets). Pip-installed cmake (`~/.local/bin/cmake`) auto-detected.
+- **C++ standard:** C++20 throughout, `-Wall -Wextra -Wpedantic -Werror`
+- **Sanitizers:** ASAN + UBSAN (`clang18-asan` preset), TSAN occasional (manual)
+- **Coverage:** gcov-13 with the `coverage` preset, target ≥ 80% on changed lines
+- **Static analysis:** clang-tidy with `.clang-tidy` config; cppcheck with `--enable=all`
 
 ```cmake
 # Key CMake flags to know
@@ -19,29 +19,117 @@
 -DQFAULT_GRIDSYNTH_PATH=<path> # Path to GridSynth binary/lib
 ```
 
-## Core Dependencies
+## Build presets
 
-| Dependency | Version | Purpose | How acquired |
-|-----------|---------|---------|-------------|
-| GoogleTest | 1.14+ | Unit + integration tests | CMake FetchContent |
-| Google Benchmark | 1.8+ | Micro-benchmarks | CMake FetchContent |
-| GridSynth | latest | T-optimal single-qubit synthesis (wrapped) | System install or FetchContent |
-| Stim | 1.14+ | Simulation oracle for validation | System install (validation only) |
-| pybind11 | 2.10+ | Python bindings (Stage 5 only) | CMake FetchContent |
+| Preset | Compiler | Flavour | Purpose |
+|--------|----------|---------|---------|
+| `gcc13-debug` | gcc-13 | Debug | Default development |
+| `gcc13-release` | gcc-13 | Release | Performance comparison |
+| `clang18-debug` | clang-18 | Debug | Cross-compiler check |
+| `clang18-release` | clang-18 | Release | Performance comparison |
+| `clang18-asan` | clang-18 | RelWithDebInfo + sanitizers | ASAN + UBSAN gate |
+| `coverage` | gcc-13 | Debug + gcov | Coverage gate |
+| `gcc13-tsan` | gcc-13 | RelWithDebInfo + TSAN | Multithreading checks |
+| `gcc13-perf` | gcc-13 | Release + `-pg` | Profiling |
+| `system` | system default | Debug | Forbidden in CI; only for ad-hoc local |
 
-**No LLVM dependency for v0.1** — MLIR/QIR integration considered for v0.2.
-QIR output in v0.1 is generated directly without the LLVM toolchain.
+## External dependencies (FetchContent)
 
-## Static Analysis & Sanitizers
+| Dep | Version (pinned) | Purpose | Stage required |
+|-----|------------------|---------|----------------|
+| GoogleTest | 1.15.2 | Unit testing | 1 |
+| Google Benchmark | v1.9.0 | Microbench harness | 2 |
+| Stim | **v1.15.0** | Tableau equivalence oracle | 2.5 |
+| MQT QCEC | **v3.5.0** | DD/ZX equivalence checking | 2.5 |
+| pybind11 | v2.11.1 | Python bindings | 5b |
+| tl::expected | v1.1.0 | C++23 `std::expected` shim | 3 |
+| MPFR | 4.2 | Exact arithmetic for native Ross-Selinger | 6 |
+| GMP | 6.3 | MPFR dependency | 6 |
+| QIR | Alliance v0.1 base profile | QIR backend | 5a |
+
+**External binaries** (host-installed, optional):
+- GridSynth (Haskell, version-pinned in CI Dockerfile) — Stage 2 default synthesis
+
+## Compile definitions
+
+- `QFAULT_HAS_GRIDSYNTH` — set by `find_program(gridsynth)` if found
+- `QFAULT_QIR_VERSION_MAJOR/MINOR/PATCH` — from `cmake/qir_version.cmake`
+- `SIMD_WIDTH=64` — pinned for Stim golden reproducibility (ADR-0021)
+
+## Files of interest
+
+- `CMakeLists.txt` — root, presets, FetchContent
+- `cmake/qir_version.cmake` — QIR pinned version (per ADR-0005)
+- `.clang-tidy` — static analysis config
+- `.clang-format` — style; **do not run blindly on existing files**, only on new ones
+- `.gitattributes` — `text eol=lf` enforcement (per ADR-0017)
+- `.github/workflows/ci.yml` — 4-way CI matrix + ASAN+UBSAN job
+
+## Quick reference commands
+
 ```bash
-# Must pass before any PR merge
-clang-tidy --config-file=.clang-tidy src/
-cppcheck --enable=all --suppress=missingInclude src/
+# Build & test
+cmake --preset gcc13-debug && cmake --build build/gcc13-debug -j && ctest --test-dir build/gcc13-debug -j
+
+# Sanitizer pass
+cmake --preset clang18-asan && cmake --build build/clang18-asan -j
+ASAN_OPTIONS=detect_leaks=1 \
+UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+ctest --test-dir build/clang18-asan -j
+
+# Coverage
+cmake --preset coverage && cmake --build build/coverage -j
+ctest --test-dir build/coverage -j
+gcovr -r . build/coverage --html-details -o build/coverage/coverage.html
+
+# Quick test (60s budget, runs before every commit)
+./scripts/quick-test.sh
+
+# Stage 3 — Stim equivalence diff (Stage 2.5+)
+./scripts/compare-stim.sh tests/reference/bv10-d5.stim build/golden/
+
+# Update goldens (intentional only — set the env var)
+QFAULT_UPDATE_GOLDENS=1 ctest --test-dir build/gcc13-debug -R Golden
+```
+## Dependency-bump policy
+
+Bumping any pinned version requires a new ADR with measured delta on the
+relevant Stage gate test. Stim is expected to bump every 6–9 months; QCEC every
+6–12 months; pybind11 stable. GridSynth (Haskell) is unlikely to need bumps.
+
+## CI matrix (current)
+
+```
+job: build-and-test
+  strategy:
+    matrix:
+      compiler: [gcc-13, clang-18]
+      build-type: [Debug, Release]
+
+job: sanitizers
+  runs-on: ubuntu-24.04
+  uses: clang18-asan preset
+
+job: coverage
+  runs-on: ubuntu-24.04
+  uses: coverage preset
+  reports: codecov.io
+
+job: static-analysis
+  runs-on: ubuntu-24.04
+  steps: clang-tidy + cppcheck on changed files
 ```
 
-`.clang-tidy` config: enable `modernize-*`, `performance-*`, `readability-*`,
-`cppcoreguidelines-*`. Disable `fuchsia-*` (overly restrictive).
+For Stage 2.5+, add:
 
+```
+job: reproducibility
+  runs-on: ubuntu-24.04
+  steps:
+    - docker build -f Dockerfile -t qfault:ci .
+    - docker run qfault:ci make figures
+    - diff bench/golden/expected/ bench/plots/
+```
 ## Python Bindings (Stage 5)
 - **pybind11** (not nanobind for now — broader community familiarity)
 - Python ≥ 3.10

@@ -3,19 +3,47 @@
 > **This file is the first thing to read at the start of every Claude session.**
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
-
+> Persistent context for the next AI session. Update before `/clear`.
 _Last updated: 2026-04-25 — Stage 2 fully implemented; all 10 issues closed; 118 tests green_
 
 ---
+## Current state (2026-04-26)
+
+- **Stages 1 + 2 are CODE COMPLETE.** 211/211 tests passing.
+- **Stage 2 GATE pending** GridSynth binary install on benchmarking machine
+  (test infrastructure ready, just needs the binary to run the T-count + overhead validation).
+- Just completed: full ADR backfill (0005–0021, total 21 ADRs), gap-fill of the  Stage 1+2 documentation, and the Stage 3 kickoff materials.
 
 ## Current Phase
 
 **Stage 2 of 5: Synthesis Pass (T-Gate)** — Code complete; gate pending GridSynth install
 Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 issues Done.
 
+## Active Stage
+
+**→ Stage 2.5: Verification & Reproducibility Harness** is up next, before Stage 3.
+
+This is a NEW stage inserted after the Stage 2 retrospective surfaced that
+Stage 3's "Stim says correct" gate has no plumbing without it. Estimated 4–6
+weeks. See `docs/phases/stage-2.5-verification/`.
+
+After Stage 2.5: **Stage 3 — Lattice Surgery Mapper** (8–12 weeks, hardest gate).
+All Stage 3 phase docs are pre-written at `docs/phases/stage-3-lattice-surgery/`.
+
 ## Active Story
 
-**No active story** — Stage 2 implementation complete; all 10 issues closed.
+None active yet — Stage 2.5 has not been kicked off. The next session should:
+1. Read `docs/phases/stage-2.5-verification/spec.md` and `kickoff.md`
+2. Run `/pm:prd-parse` on the Stage 2.5 spec to generate the epic + tasks
+3. Begin with Stim FetchContent integration (the "no Stim integration"
+   gap noted in the retrospective)
+
+## Next Action
+
+**Read the Stage 2.5 spec and run `/pm:prd-parse` to generate the epic.**
+
+After that, the first issue is "Wire Stim v1.15.0 via FetchContent into a new
+`verify/` library target, including SIMD-width pinning to 64 for goldens."
 
 ## State of Work
 
@@ -78,7 +106,11 @@ Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 iss
 
 ## Open Blockers
 
-- **GridSynth binary not installed** — required to run `test_TCountValidation` and `bench-synthesis.sh` for Stage 2 formal gate sign-off. Install from https://github.com/kenmcken/newsynth before running `/phase-exit`.
+- GridSynth binary needs to be installed on benchmark machine to close Stage 2 gate
+- Stage 2.5 work has not started; deferred Stim/QCEC integration since the team
+  was finishing Stage 2 first
+- ADR-0011 (phase-polynomial pass) is still Draft; decision deferred until
+  Stage 3 schedule clarity emerges
 
 ## Next Action — Start Here on Next Session
 
@@ -109,6 +141,30 @@ Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 iss
   `gcc13-debug` by default (overridable via `QFAULT_PRESET` env var).
 - **"no T remain" integration test with SKProvider**: SKProvider returns `{T}` for
   R_z(π/4) (exact answer). Use `CliffordOnlyProvider` mock in the test instead.
+
+## Don't Forget
+
+- **8 entries in `CHANGELOG.md` "Failed Approaches" — read all before proposing**
+  anything in routing, synthesis, A*, or factory cost code.
+- Three numerical-target retractions from the retrospective:
+  1. Litinski Section 5 has NO BV-10/QFT/adder reference numbers — target the
+     parametric tile-count formulas (1.5n+3, 2n+4, 2n+√(8n)+1) instead
+  2. Beverland 2022 has only 15-to-1 factories — 116-to-12 (Bravyi-Haah 2012)
+     and 225-to-1 (Litinski 2019) are separate sources
+  3. liblsqecc's default router is Dijkstra (not A*); QFault deviates intentionally
+- **`SKProvider` will be renamed `BFSTableProvider`** in v0.2 (ADR-0013).
+- "Validated" not "verified" everywhere (ADR-0009).
+- Stim v1.15.0, library target `libstim`, SIMD pinned to 64 (ADR-0021).
+
+## Memory pointers (for /resume)
+
+- `CLAUDE.md` → conventions, all 21 ADRs cross-referenced
+- `CHANGELOG.md` → "Failed Approaches" (8 entries) + stage progress log
+- `docs/adr/README.md` → ADR index
+- `docs/phases/stage-2.5-verification/` → next stage spec
+- `docs/phases/stage-3-lattice-surgery/` → full Stage 3 treatment, ready to kick off
+- `.claude/rules/{cpp,qec,routing}.md` → path-scoped rules
+- `.claude/agents/{cpp-pro,reviewer}.md` → specialised subagents
 
 ## Key Architecture (quick reference)
 

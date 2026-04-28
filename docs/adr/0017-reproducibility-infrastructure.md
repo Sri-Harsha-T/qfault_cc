@@ -50,6 +50,18 @@ QFault ships, as **Stage 2.5 deliverables**:
     - Submission frozen at the moment the Zenodo DOI is minted; no edits
       thereafter.
 
+**Reproducibility plumbing:**
+- Pin benchmark corpora as **shallow git submodules at exact commits**: QASMBench
+  (`pnnl/QASMBench`), MQT Bench (`munich-quantum-toolkit/bench` — generator,
+  output to gitignored `_generated/`), Feynman corpus (`meamy/feynman`).
+- CI uses `git submodule update --init --recursive --depth 1`, **never `--remote`**.
+- Golden-file workflow: `EXPECT_EQ` against committed file; if
+  `QFAULT_UPDATE_GOLDENS=1`, overwrite and pass. **CI must never set this variable.**
+- Stable serialization: no timestamps, no addresses, no hash values, sort all
+  unordered iterables, LF line endings only,
+  locale-independent numeric formatting (`std::format("{:.17g}", x)`).
+- `.gitattributes` enforces `text eol=lf`.
+
 ---
 
 ## Alternatives Considered

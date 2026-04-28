@@ -7,30 +7,37 @@ Use the `/adr` slash command to consult and create ADRs.
 > **Rule:** Propose an ADR before: adding a dependency, changing a numerical
 > convention, switching synthesis algorithms, or changing the IR schema.
 
+The MADR-lite house style (see ADR-0001 for the canonical example): header,
+three-line front matter (`Status`, `Date`, `Supersedes`), `Context | Decision |
+Alternatives Considered (table) | Consequences (Positive / Negative–Trade-offs / Risks) |
+Implementation Notes for AI Sessions | References`.
 ---
 
 ## Index
 
-| # | Title | Status | Date | Supersedes |
-|---|-------|--------|------|-----------|
-| [ADR-0001](0001-ir-representation.md) | IR representation: two-level vs. two-module | Accepted | 2026-04-24 | — |
-| [ADR-0002](0002-synthesis-provider-interface.md) | SynthesisProvider as a C++20 Concept | Accepted | 2026-04-25 | — |
-| [ADR-0003](0003-global-code-distance.md) | Global code distance d for v0.1; variable-d deferred | Accepted | 2026-04-25 | — |
-| [ADR-0004](0004-gridsynth-as-default.md) | GridSynth as default; BFS-table oracle as benchmark baseline | Accepted (with limitation) | 2026-04-25 | partly by ADR-0013 |
-| [ADR-0005](0005-qir-version-pinning.md) | QIR output spec version pinning (v0.1 base profile) | Accepted | 2026-04-26 | — |
-| [ADR-0006](0006-lattice-surgery-routing.md) | Lattice surgery routing: A* + Litinski templates + earliest-available scheduling | Accepted | 2026-04-26 | — |
-| [ADR-0007](0007-msd-factory-selection.md) | MSD factory selection: catalog enumeration with Beverland 2022 cost formulas | Accepted | 2026-04-26 | — |
-| [ADR-0008](0008-synthesis-algorithm-portfolio.md) | Synthesis algorithm portfolio: Ross-Selinger now, Kliuchnikov-2023 in Stage 6 | Accepted | 2026-04-26 | — |
-| [ADR-0009](0009-verification-strategy.md) | Verification strategy: Stim + MQT QCEC, framed as validation not verification | Accepted | 2026-04-26 | — |
-| [ADR-0010](0010-output-backend-portfolio.md) | Output backend portfolio: QASM 3.0 + QIR + Stim native | Accepted | 2026-04-26 | — |
-| [ADR-0011](0011-phase-polynomial-zx-pass.md) | Phase-polynomial / ZX optimisation pass: native AMM + optional PyZX bridge | Draft | 2026-04-26 | — |
-| [ADR-0012](0012-pybind11-vs-nanobind.md) | Python bindings: pybind11 for v0.1, revisit nanobind for v0.2 | Accepted | 2026-04-26 | — |
-| [ADR-0013](0013-skprovider-as-fallback-oracle.md) | Reframing SKProvider as a fallback / sanity oracle (rename to BFSTableProvider) | Accepted | 2026-04-26 | ADR-0004 (in part) |
-| [ADR-0014](0014-failed-approach-tracking.md) | Failed-approach tracking as project policy | Accepted | 2026-04-26 | — |
-| [ADR-0015](0015-apache2-license.md) | License: Apache 2.0 with explicit patent grant | Accepted | 2026-04-26 | — |
-| [ADR-0016](0016-conference-target-ladder.md) | Conference target ladder: QCE26 → CGO27 → optional OOPSLA/PLDI | Accepted | 2026-04-26 | — |
-| [ADR-0017](0017-reproducibility-infrastructure.md) | Reproducibility infrastructure: Dockerfile + flake.nix + Zenodo DOI + papers/ | Accepted | 2026-04-26 | — |
-| [ADR-0018](0018-mlir-dialect.md) | MLIR exposure via qfault.fto custom dialect (Stage 7 Option A) | Draft | 2026-04-26 | — |
+| # | Title | Status | Date | Stage | Supersedes |
+|---|-------|--------|------|-------|-----------|
+| [ADR-0001](0001-ir-representation.md) | IR representation: two-level via `variant<LogicalGate, PatchOp>` | Accepted | 2026-04-25 | 1 | — |
+| [ADR-0002](0002-synthesis-provider-interface.md) | `SynthesisProvider` as a C++20 Concept | Accepted | 2026-04-25 | 2 | — |
+| [ADR-0003](0003-global-code-distance.md) | Global code distance `d` for v0.1 | Accepted | 2026-04-25 | 2 | — |
+| [ADR-0004](0004-gridsynth-as-default.md) | GridSynth default; BFS-table oracle as benchmark baseline | Accepted (with limitation) | 2026-04-25 | 2 | — (partial supersession by ADR-0013) |
+| [ADR-0005](0005-qir-version-pinning.md) | QIR Alliance v0.1 base profile pinned | Accepted | 2026-04-26 | 5a | — |
+| [ADR-0006](0006-routing-algorithm.md) | Lattice surgery routing: A* on tile grid + Litinski templates + Silva 2024 EAF | Accepted | 2026-04-26 | 3 | — |
+| [ADR-0007](0007-msd-factory-catalog.md) | MSD factory selection: Beverland 2022 catalog + Gidney-Fowler CCZ→2T | Accepted | 2026-04-26 | 4 | — |
+| [ADR-0008](0008-synthesis-portfolio.md) | Synthesis algorithm portfolio: Ross-Selinger now, Kliuchnikov-2023 in Stage 6 | Accepted | 2026-04-26 | 6 | — |
+| [ADR-0009](0009-validation-not-verification.md) | Verification strategy: validation (Stim + QCEC), not formal verification | Accepted | 2026-04-26 | 2.5 | — |
+| [ADR-0010](0010-output-backends.md) | Output backend portfolio: QASM 3.0 + QIR + Stim native | Accepted | 2026-04-26 | 5a | — |
+| [ADR-0011](0011-phase-polynomial-pass.md) | Phase-polynomial / ZX optimization pass — native + optional PyZX bridge | Draft | 2026-04-26 | 3 or 6 | — |
+| [ADR-0012](0012-pybind11-for-v01.md) | Python bindings: pybind11 v0.1; revisit nanobind for v0.2 | Accepted | 2026-04-26 | 5b | — |
+| [ADR-0013](0013-bfs-table-provider-rename.md) | Reframe `SKProvider` as `BFSTableProvider` / sanity oracle | Accepted | 2026-04-26 | 2.5 | partial supersession of ADR-0004 |
+| [ADR-0014](0014-failed-approach-tracking.md) | Failed-approach tracking as project policy | Accepted | 2026-04-26 | always | — |
+| [ADR-0015](0015-apache-license.md) | License: Apache 2.0 with patent grant | Accepted | 2026-04-26 | always | — |
+| [ADR-0016](0016-conference-target-ladder.md) | Conference target ladder: QCE26 → CGO27 → optional OOPSLA/PLDI | Accepted | 2026-04-26 | 5c | — |
+| [ADR-0017](0017-reproducibility-infrastructure.md) | Reproducibility: Dockerfile + flake.nix + Zenodo DOI + papers/ | Accepted | 2026-04-26 | 2.5 | — |
+| [ADR-0018](0018-mlir-stretch-optional.md) | MLIR exposure via `qfault.fto` custom dialect — Stage 7 stretch, optional | Draft | 2026-04-26 | 7 | — |
+| [ADR-0019](0019-boundary-conventions.md) | Surface code boundary convention: GoSC dashed=X / solid=Z | Accepted | 2026-04-26 | 3 | — |
+| [ADR-0020](0020-cnot-recipe.md) | Logical CNOT recipe: MZZ + SPLIT + MXX + X-meas + Pauli-frame correction | Accepted | 2026-04-26 | 3 | — |
+| [ADR-0021](0021-stim-oracle-integration.md) | Stim oracle: FetchContent v1.15.0, `has_flow` primary, detector backstop | Accepted | 2026-04-26 | 2.5 | — |
 
 ---
 
@@ -53,6 +60,21 @@ Use the `/adr` slash command to consult and create ADRs.
 3. **ADR-0014** — the failed-approach tracking policy you'll be touching.
 4. **ADR-0015** — the licensing model.
 5. **ADR-0009** — the validation-not-verification framing.
+
+If you are starting Stage 3 work, additionally:
+1. ADR-0006 (routing algorithm)
+2. ADR-0019 (boundary conventions)
+3. ADR-0020 (CNOT recipe)
+4. ADR-0021 (Stim integration)
+
+If you are starting Stage 4 work, additionally:
+- ADR-0003 (why d is global; what changes for variable-d)
+- ADR-0007 (MSD factory catalog)
+
+If you are evaluating QFault for OSS contribution or artifact submission:
+- ADR-0015 (license)
+- ADR-0016 (conference plan)
+- ADR-0017 (reproducibility infrastructure)
 
 Then the stage-specific ADRs as their stages start: **ADR-0006** (Stage 3),
 **ADR-0007** (Stage 4), **ADR-0005 + ADR-0010** (Stage 5a), **ADR-0012**

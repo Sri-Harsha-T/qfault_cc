@@ -109,6 +109,7 @@ the latest failed approach so it appears at session start.
 
 - `CHANGELOG.md` "Failed Approaches" section (live table)
 - `.claude/commands/log.md` (slash command implementation)
+- `.claude/skills/ccpm` slash command definitions
 - ACM artifact evaluation guidelines
 - ADR-0013 (where the SKProvider misread was promoted to a design note)
 - ADR-0017 (reproducibility infrastructure — failed-approach log is part

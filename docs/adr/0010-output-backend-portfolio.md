@@ -25,6 +25,7 @@ v0.1 ships **three backends behind a uniform `Backend` interface**:
    Stage 5a deliverable.
 3. **Stim native** — the verification enabler, NOT a side feature.
    Stage 5a deliverable, doubles as the validation oracle (ADR-0009).
+   (consumes Stage 3 PHYSICAL IR directly, supports `verify/`-side equivalence).
 
 Each backend is opt-in via a CMake flag:
 - `-DQFAULT_BACKEND_QASM3=ON` (default)

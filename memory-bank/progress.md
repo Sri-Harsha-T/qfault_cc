@@ -1,21 +1,23 @@
 # Progress Log — QFault
 
 Append-only. Never delete. Newest entries at the top of each section.
-
+> Single source of truth for "what is shipped". Update on every story completion.
 ---
 
 ## Stage Status Overview
 
-| Stage | Name | Status | Started | Completed | Gate Passed |
-|-------|------|--------|---------|-----------|-------------|
-| 1 | IR + Pass Manager Core | ✅ Complete | 2026-04-24 | 2026-04-25 | ✅ 2026-04-25 |
-| 2 | Synthesis Pass (T-Gate) | 🔄 Code Complete | 2026-04-25 | — | ⬜ Gate pending GridSynth |
-| 3 | Lattice Surgery Mapper | ⬜ Backlog | — | — | ⬜ |
-| 2.5 | Verify + Bench (Stim + QCEC) | ⬜ Backlog (post-Stage 3) | — | — | ⬜ |
-| 4 | MSD Scheduling + Resource Estimator | ⬜ Backlog | — | — | ⬜ |
-| 5 | Output Backends + Python + arXiv | ⬜ Backlog | — | — | ⬜ |
-| 6 | Native Synthesis (post-arXiv) | ⬜ Optional, post-Stage 5 | — | — | ⬜ |
-| 7 | Formal-Methods or MLIR Stretch | ⬜ Optional, opt-in only | — | — | ⬜ |
+| Stage | Status | Tests | Code | Docs |
+|-------|--------|-------|------|------|
+| 1 — IR + PassManager + QASM 3.0 | ✅ COMPLETE | 93/93 | shipped | exit-report ✅ |
+| 2 — T-gate synthesis | ✅ CODE COMPLETE (gate pending) | 118/118 | shipped | exit-report pending GridSynth install |
+| 2.5 — Verification & Reproducibility Harness | 🔜 NEXT | 0 | not started | spec ready |
+| 3 — Lattice Surgery Mapper | 🚧 PLANNED | 0 | not started | spec + todo + kickoff + prompt_plan ready |
+| 4 — MSD + Resource Estimator | 🚧 PLANNED | 0 | not started | kickoff stub |
+| 5a — Output backends | 🚧 PLANNED | 0 | not started | kickoff stub |
+| 5b — Python bindings | 🚧 PLANNED | 0 | not started | kickoff stub |
+| 5c — Paper + Zenodo + v0.1.0 release | 🚧 PLANNED | n/a | not started | kickoff stub |
+| 6 — Native Ross-Selinger + Kliuchnikov-2023 | 🚧 OPTIONAL | 0 | not started | kickoff stub |
+| 7 — Formal methods OR MLIR | 🚧 OPTIONAL | 0 | not started | kickoff stub |
 
 ---
 
@@ -84,19 +86,33 @@ survive academic / hiring scrutiny. Key findings, with their resolution:
 
 ---
 
-## Stage 2.5: Verify + Bench
+## Stage 2.5: Verify + Bench — planned 2026-04-26 (NEW STAGE)
 
-**Target:** 1–2 weeks (parallel with end of Stage 3)
-**Gate:** Stim oracle + MQT QCEC equivalence checker run as CI gates;
-50-circuit regression corpus passes both.
+Acceptance: `make figures` reproduces published Stage 2 numbers within 5% on a
+clean Ubuntu 24.04 container, with all external binaries pinned by version.
 
-*(not started — post-Stage 3 deliverable per ADR-0009)*
+- [ ] Stim v1.15.0 FetchContent integration (libstim target, SIMD-width=64)
+- [ ] MQT QCEC v3.5.0 integration (FetchContent the C++ source)
+- [ ] `verify/` library target with Stim oracle + QCEC bridge
+- [ ] BFSTableProvider rename (ADR-0013) + deprecated alias for SKProvider
+- [ ] `bench/circuits/` git submodules: QASMBench, MQT Bench (generator), Feynman
+- [ ] `bench/golden/` initial committed JSON tables
+- [ ] `make figures` target → `bench/plots/*.pdf`
+- [ ] Dockerfile (ubuntu:24.04, multi-stage, all deps version-pinned)
+- [ ] `flake.nix` for Nix-preferring reviewers
+- [ ] Zenodo DOI integration on tagged release
+- [ ] `papers/` directory skeleton
 
 ---
 
-## Stage 3: Lattice Surgery Mapper
+## Stage 3: Lattice Surgery Mapper — planned (full treatment in `docs/phases/stage-3-lattice-surgery/`)
 
-*(active — see `docs/phases/stage-3-lattice/spec.md`)*
+Acceptance: BV-10 logical circuit at d=5 produces correct logical output
+verified by `stim::Circuit::has_flow(...)` for all 10 logical Z observables;
+tile-count formulas reproduce within 10% (compact 1.5n+3, intermediate 2n+4,
+fast 2n+√(8n)+1).
+
+See `docs/phases/stage-3-lattice-surgery/spec.md` for the full breakdown.
 
 ---
 

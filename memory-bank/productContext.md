@@ -11,6 +11,30 @@ Google's open quantum compiling roles explicitly list "compiling logical quantum
 algorithms to low-level fault-tolerant instructions" as the core task. This is
 a funded, active need — and the open-source tooling to support it is fragmentary.
 
+## Problem statement
+
+Compiling a logical quantum algorithm to fault-tolerant instructions on a
+surface code requires solving five sub-problems in sequence: (1) decomposing
+arbitrary single-qubit rotations into Clifford+T sequences, (2) routing
+multi-qubit operations as lattice surgeries on a 2D tile grid, (3) scheduling
+operations against limited factory outputs and routing channels, (4) sizing
+the magic-state-distillation factories to meet T-state demand at the target
+output error, and (5) estimating physical-qubit count and wall-clock time.
+
+Each sub-problem has open-source tools (GridSynth, liblsqecc, Stim, QFold,
+Qiskit-QEC, Azure QRE), but they are written in five different languages
+(Haskell, C++, Python, F#, C#) with five different IRs. There is no single
+codebase that takes a circuit in and emits a complete fault-tolerant
+specification with intermediate artifacts that other tools accept.
+
+## How QFault solves it
+
+A single C++20 codebase, structured as **LLVM-style passes** over a **two-level
+IR** (`std::variant<LogicalGate, PatchOp>`), with **C++20 Concept-based
+provider interfaces** at extension points. The FT-specific knowledge is
+captured in **ADRs** (architectural decisions) and **path-scoped rules** so
+that the codebase explains itself to maintainers and reviewers.
+
 ## Primary Users
 
 **User A — QEC Researcher**
@@ -56,3 +80,40 @@ a funded, active need — and the open-source tooling to support it is fragmenta
 > Unlike gluing Stim + GridSynth + PyLIQTR together, QFault provides a
 > modular pass-manager architecture with spatial routing awareness and
 > compiler-derived resource estimation.
+
+## What QFault explicitly does not do
+
+- Execute on hardware (we emit; we don't dispatch)
+- Decode (we emit Stim circuits; the user runs Stim/PyMatching/etc.)
+- Compile from a high-level language (we accept QASM 3.0; not Q#, not Python)
+- Optimise across the Pauli-product / phase-polynomial frontier in v0.1
+  (Stage 3 or 6 deliverable, ADR-0011)
+
+## User journey (v0.1)
+
+```
+$ cat my_algorithm.qasm
+OPENQASM 3.0;
+include "stdgates.inc";
+qubit[10] q;
+... 10⁶ T-gates total ...
+
+$ qfault compile my_algorithm.qasm \
+    --code-distance 13 --error-rate 1e-4 \
+    --backend qir --emit-stim-oracle out/
+
+Logical:    10 qubits, 1.2e6 T-count
+Synthesis:  GridSynth ε=1e-10, 8.4 sec
+Routing:    intermediate layout, 24 tiles, 5τ/T
+MSD:        15-to-1 SE × 16, output P_T = 5.6e-11
+Estimate:   53,200 physical qubits, 4.1 hours @ 1µs cycle
+Backend:    out/algorithm.ll  (QIR, 12 KB)
+Oracle:     out/algorithm.stim (Stim circuit, 2.1 MB)
+
+$ qfault verify out/algorithm.stim my_algorithm.qasm
+[Stim has_flow check]   PASS (10/10 logical observables)
+[QCEC clifford+T check] PASS (all 7-qubit Clifford+T blocks)
+[golden detector check] PASS (1024/1024 noiseless shots, 0 detector flips)
+```
+
+This is the experience v0.1 ships.

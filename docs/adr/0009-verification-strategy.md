@@ -27,7 +27,7 @@ The validation layer comprises three components:
     Backstop with **detector-distribution comparison**: strip noise via
     `circuit.without_noise()`, then assert
     `count_determined_measurements() == num_measurements()` and run 1024
-    sweep-bit-driven shots.
+    sweep-bit-driven shots. See ADR-0021.
 
 (b) **MQT QCEC equivalence checking on Clifford+T blocks ≤ 8 qubits** as
     a CI gate. CI logic: demand `Equivalent` or
@@ -80,6 +80,7 @@ conference submission use **"validated"** rather than **"verified"**.
   is the target).
 - Stim's C++ ABI is openly documented as unstable across versions; budget
   one tag-bump cycle every 6–9 months.
+- MQT QCEC moved repos (`cda-tum/mqt-qcec` → `munich-quantum-toolkit/qcec`) and dropped pybind11 for nanobind in v3.4.0. Both add real build-system complexity.
 
 **Risks:**
 - Mixing Stim SIMD widths across translation units causes ODR-violation
