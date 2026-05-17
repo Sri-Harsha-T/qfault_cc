@@ -4,7 +4,9 @@
 #include <qfault/ir/PatchOpKind.hpp>
 #include <qfault/passes/PassContext.hpp>
 #include <qfault/passes/routing/AStar.hpp>
+#include <qfault/passes/routing/Scheduler.hpp>
 
+#include <algorithm>
 #include <cassert>
 #include <string>
 
@@ -147,76 +149,70 @@ PassResult LatticeSurgeryPass::run(QFaultIRModule& module, PassContext& ctx) {
 
     buildQubitCoordMap(module.qubits.size());
 
+    // Schedule logical gates into parallel slots (EAF, trivial commutation rule).
+    EAFScheduler scheduler;
+    const auto slots = scheduler.schedule(module.instructions);
+
     std::vector<Instruction> physical;
     physical.reserve(module.instructions.size() * 5);
-    std::size_t timeStep = 0;
-    std::size_t cxCount  = 0;
+    std::size_t tau     = 0; // current τ slot (code-cycle base)
+    std::size_t cxCount = 0;
 
-    for (const auto& instr : module.instructions) {
-        const auto* gate = std::get_if<LogicalGate>(&instr);
-        if (!gate) continue; // skip non-gate instructions in LOGICAL IR
+    for (const auto& slot : slots) {
+        std::size_t slot_cost = 0; // τ consumed by this slot (max across gates)
 
-        if (gate->kind == GateKind::CX) {
-            assert(gate->operands.size() == 2);
-            const LogicalQubit& ctrl = gate->operands[0];
-            const LogicalQubit& tgt  = gate->operands[1];
-            const PatchCoord cc = qubitCoord(ctrl.index);
-            const PatchCoord tc = qubitCoord(tgt.index);
+        for (const std::size_t idx : slot.gate_indices) {
+            const auto& gate = std::get<LogicalGate>(module.instructions[idx]);
 
-            if (cc.y == tc.y && std::abs(cc.x - tc.x) == 2) {
-                // Adjacent qubits — use the local 3-patch L-shape recipe (2τ).
-                auto instrs = emitLocalCNOT(ctrl, tgt, timeStep);
-                physical.insert(physical.end(), instrs.begin(), instrs.end());
-                timeStep += 2;
-            } else {
-                // Non-adjacent qubits — route via A* and emit a full 2-MERGE
-                // recipe (each MERGE 1τ, total 2τ regardless of distance).
-                AStarRouter router{layout_.spec};
+            if (gate.kind == GateKind::CX) {
+                assert(gate.operands.size() == 2);
+                const LogicalQubit& ctrl = gate.operands[0];
+                const LogicalQubit& tgt  = gate.operands[1];
+                const PatchCoord cc = qubitCoord(ctrl.index);
+                const PatchCoord tc = qubitCoord(tgt.index);
 
-                // First MERGE: MZZ from control toward an intermediate ancilla.
-                // For simplicity, route through the routing row (y=1).
-                // A full implementation would use Silva 2024 EAF (#50).
-                PatchCoord pivot{cc.x, cc.y + 1}; // step into routing row
-                if (!layout_.spec.inBounds(pivot.x, pivot.y) ||
-                    layout_.spec.stateAt(pivot.x, pivot.y) != TileState::Empty) {
-                    pivot = {cc.x, cc.y - 1}; // try other direction
-                }
-
-                // Emit IDLE PatchOps as a placeholder for non-adjacent CNOTs
-                // until the full Silva EAF scheduler is wired (#50).
-                physical.push_back(PatchOp{
-                    .kind     = PatchOpKind::IDLE,
-                    .patches  = {cc},
-                    .basis    = MeasBasis::Z,
-                    .timeStep = timeStep,
-                });
-                physical.push_back(PatchOp{
-                    .kind     = PatchOpKind::IDLE,
-                    .patches  = {tc},
-                    .basis    = MeasBasis::Z,
-                    .timeStep = timeStep,
-                });
-                physical.push_back(PauliFrameUpdate{
-                    .corrections = {{ctrl, Pauli::Z}, {tgt, Pauli::X}},
-                    .timeStep    = timeStep + 1,
-                });
-                timeStep += 2;
-            }
-            ++cxCount;
-        } else {
-            // Single-qubit or other gate: emit IDLE on each operand qubit.
-            for (const auto& q : gate->operands) {
-                if (q.index < qubit_coords_.size()) {
+                if (cc.y == tc.y && std::abs(cc.x - tc.x) == 2) {
+                    // Adjacent qubits — local 3-patch L-shape recipe (2τ).
+                    auto instrs = emitLocalCNOT(ctrl, tgt, tau);
+                    physical.insert(physical.end(), instrs.begin(), instrs.end());
+                } else {
+                    // Non-adjacent: IDLE placeholder until Silva EAF routing (#50-ext).
                     physical.push_back(PatchOp{
                         .kind     = PatchOpKind::IDLE,
-                        .patches  = {qubitCoord(q.index)},
+                        .patches  = {cc},
                         .basis    = MeasBasis::Z,
-                        .timeStep = timeStep,
+                        .timeStep = tau,
+                    });
+                    physical.push_back(PatchOp{
+                        .kind     = PatchOpKind::IDLE,
+                        .patches  = {tc},
+                        .basis    = MeasBasis::Z,
+                        .timeStep = tau,
+                    });
+                    physical.push_back(PauliFrameUpdate{
+                        .corrections = {{ctrl, Pauli::Z}, {tgt, Pauli::X}},
+                        .timeStep    = tau + 1,
                     });
                 }
+                slot_cost = std::max(slot_cost, std::size_t{2});
+                ++cxCount;
+            } else {
+                // Single-qubit or other gate: IDLE on each operand.
+                for (const auto& q : gate.operands) {
+                    if (q.index < qubit_coords_.size()) {
+                        physical.push_back(PatchOp{
+                            .kind     = PatchOpKind::IDLE,
+                            .patches  = {qubitCoord(q.index)},
+                            .basis    = MeasBasis::Z,
+                            .timeStep = tau,
+                        });
+                    }
+                }
+                slot_cost = std::max(slot_cost, std::size_t{1});
             }
-            ++timeStep;
         }
+
+        tau += slot_cost;
     }
 
     module.instructions = std::move(physical);
@@ -224,7 +220,8 @@ PassResult LatticeSurgeryPass::run(QFaultIRModule& module, PassContext& ctx) {
 
     ctx.addDiagnostic(DiagLevel::Info,
         "LatticeSurgeryPass: LOGICAL→PHYSICAL, " + std::to_string(cxCount) +
-        " CX gate(s), " + std::to_string(timeStep) + " time step(s)");
+        " CX gate(s), " + std::to_string(tau) + " τ, depth=" +
+        std::to_string(scheduler.logicalDepth()) + " slot(s)");
 
     return PassResult::Success;
 }
