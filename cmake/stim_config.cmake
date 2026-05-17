@@ -30,7 +30,27 @@ FetchContent_Declare(
 # Stim build options
 set(SIMD_WIDTH ${QFAULT_STIM_SIMD_WIDTH} CACHE STRING "" FORCE)
 
+# Prevent Stim from building its Python bindings (pybind11 may be a system
+# package, triggering the bindings build; their warnings break under -Werror).
+set(Python_FOUND FALSE)
+
 FetchContent_MakeAvailable(stim)
+
+# CMAKE_CXX_FLAGS is applied globally at generation time — clearing it before
+# FetchContent_MakeAvailable does not isolate Stim. Instead, add -Wno-error
+# to every Stim target after the fact; in GCC/Clang, a later flag overrides
+# an earlier one, so this cancels the inherited -Werror without touching ours.
+foreach(_stim_target IN ITEMS libstim stim stim_perf stim_python_bindings)
+    if(TARGET ${_stim_target})
+        target_compile_options(${_stim_target} PRIVATE -Wno-error)
+        # Only libstim is needed; exclude CLI, perf harness, and Python bindings
+        # from the default build (EXCLUDE_FROM_ALL). stim_perf has a link error
+        # in v1.15.0 with C++23; stim_python_bindings pulls nanobind.
+        if(NOT _stim_target STREQUAL "libstim")
+            set_target_properties(${_stim_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        endif()
+    endif()
+endforeach()
 
 # Confirm the library target name (Stim has historically had a few)
 if(NOT TARGET libstim)
@@ -44,7 +64,13 @@ message(STATUS "Stim ${QFAULT_STIM_TAG} target 'libstim' configured (SIMD_WIDTH=
 # Convenience helper: link a target against Stim with the right include dirs.
 function(qfault_link_stim target)
     target_link_libraries(${target} PRIVATE libstim)
+    # SIMD_WIDTH must be passed to our TUs too (stim.h reads it to set MAX_BITWORD_WIDTH).
     target_compile_definitions(${target} PRIVATE
         QFAULT_HAS_STIM=1
-        QFAULT_STIM_VERSION="${QFAULT_STIM_TAG}")
+        QFAULT_STIM_VERSION="${QFAULT_STIM_TAG}"
+        QFAULT_STIM_SIMD_WIDTH=${QFAULT_STIM_SIMD_WIDTH}
+        SIMD_WIDTH=${QFAULT_STIM_SIMD_WIDTH})
+    # Stim v1.15.0 has deprecated-copy patterns inside its templates that fire
+    # when instantiated in our code. Suppress at the target level (not globally).
+    target_compile_options(${target} PRIVATE -Wno-deprecated-copy)
 endfunction()

@@ -22,9 +22,8 @@ glue 4–5 tools (Stim, GridSynth, PyLIQTR, newsynth) manually.
 
 ## Build, test, lint
 
-> **Status (post-v0.2 audit, 2026-04-26):** Stages 1+2 shipped. Stage 3 active.
-> Stage 2.5 (Verify+Bench), Stage 6 (Native Synthesis), Stage 7 (Formal/MLIR
-> Stretch) added per audit. See ROADMAP.md and `docs/adr/README.md`.
+> **Status (2026-05-17):** Stages 1+2 complete (211 tests). Stage 2.5 active.
+> Stages 3–7 queued. See `docs/adr/README.md`.
 
 Cmake preset commands:
 ```bash
@@ -84,9 +83,9 @@ papers/         # arXiv source + figures (Stage 5; per ADR-0017)
 
 ## Active stage
 
-**Stage 3 of 7: Lattice Surgery Mapper** (`docs/phases/stage-3-lattice/`).
-Stages 1+2 complete; Stage 2.5 / 6 / 7 are post-Stage-3 / post-Stage-5
-deliverables added in the v0.2 audit.
+**Stage 2.5: Verification & Reproducibility Harness** (`docs/phases/stage-2.5-verification-benchmark-harness/`).
+Issues #29–#46 on GitHub milestone "Stage 2.5: Verify + Bench".
+Next: Stage 3 — Lattice Surgery Mapper (`docs/phases/stage-3-qec/`).
 
 ## Two-level IR — central invariant
 
@@ -97,7 +96,7 @@ See ADR-0001 and `docs/architecture.md` for the full design rationale.
 
 ## Coding rules (enforced — use hooks not just memory)
 
-- C++20 throughout; Concepts over inheritance hierarchies
+- C++23 throughout; Concepts over inheritance hierarchies
 - No raw `new`/`delete`; RAII; follow C++ Core Guidelines
 - No `std::variant` for payload sub-types in hot paths — causes compile-time blowup
 - Interfaces via Concept + free-function dispatch, not virtual
@@ -155,6 +154,9 @@ See ADR-0001 and `docs/architecture.md` for the full design rationale.
 | ADR-0016 | Accepted | Conference target ladder: QCE26 → CGO27 → OOPSLA / PLDI gated on Stage 7 |
 | ADR-0017 | Accepted | Reproducibility infrastructure: Dockerfile + flake.nix + Zenodo + papers/ |
 | ADR-0018 | Draft | MLIR `qfault.fto` dialect (Stage 7 Option A) |
+| ADR-0019 | Accepted | Surface code boundary convention: GoSC dashed=X-rough / solid=Z-rough |
+| ADR-0020 | Accepted | Logical CNOT recipe: MZZ + SPLIT + MXX + X-meas + Pauli-frame correction |
+| ADR-0021 | Accepted | Stim oracle: FetchContent v1.15.0, `has_flow` primary, detector backstop |
 
 ## Session discipline
 

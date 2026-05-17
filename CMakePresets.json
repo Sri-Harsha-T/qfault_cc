@@ -106,6 +106,24 @@
         "QFAULT_ENABLE_ASAN": "ON",
         "CMAKE_CXX_FLAGS": "-Werror"
       }
+    },
+    {
+      "name": "gcc13-stim",
+      "displayName": "Debug+Stim+QCEC (gcc-13) — Stage 2.5 integration",
+      "inherits": "gcc13-debug",
+      "cacheVariables": {
+        "QFAULT_ENABLE_STIM": "ON",
+        "QFAULT_ENABLE_QCEC": "ON"
+      }
+    },
+    {
+      "name": "clang18-stim",
+      "displayName": "Debug+Stim+QCEC (clang-18) — Stage 2.5 integration",
+      "inherits": "clang18-debug",
+      "cacheVariables": {
+        "QFAULT_ENABLE_STIM": "ON",
+        "QFAULT_ENABLE_QCEC": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -117,12 +135,16 @@
     { "name": "clang18-release", "configurePreset": "clang18-release" },
     { "name": "gcc13-debug",     "configurePreset": "gcc13-debug" },
     { "name": "gcc13-release",   "configurePreset": "gcc13-release" },
-    { "name": "clang18-asan",    "configurePreset": "clang18-asan" }
+    { "name": "clang18-asan",    "configurePreset": "clang18-asan" },
+    { "name": "gcc13-stim",      "configurePreset": "gcc13-stim" },
+    { "name": "clang18-stim",    "configurePreset": "clang18-stim" }
   ],
   "testPresets": [
     { "name": "debug",         "configurePreset": "debug",         "output": { "outputOnFailure": true } },
     { "name": "clang18-debug", "configurePreset": "clang18-debug", "output": { "outputOnFailure": true } },
     { "name": "gcc13-debug",   "configurePreset": "gcc13-debug",   "output": { "outputOnFailure": true } },
-    { "name": "clang18-asan",  "configurePreset": "clang18-asan",  "output": { "outputOnFailure": true } }
+    { "name": "clang18-asan",  "configurePreset": "clang18-asan",  "output": { "outputOnFailure": true } },
+    { "name": "gcc13-stim",    "configurePreset": "gcc13-stim",    "output": { "outputOnFailure": true } },
+    { "name": "clang18-stim",  "configurePreset": "clang18-stim",  "output": { "outputOnFailure": true } }
   ]
 }

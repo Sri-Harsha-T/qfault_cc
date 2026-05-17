@@ -4,46 +4,38 @@
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
 > Persistent context for the next AI session. Update before `/clear`.
-_Last updated: 2026-04-25 — Stage 2 fully implemented; all 10 issues closed; 118 tests green_
+_Last updated: 2026-05-17 — Stage 2.5 Epic A+B complete (Stim+QCEC wired); 8 issues closed; 139 tests green_
 
 ---
-## Current state (2026-04-26)
+## Current state (2026-05-17)
 
-- **Stages 1 + 2 are CODE COMPLETE.** 211/211 tests passing.
-- **Stage 2 GATE pending** GridSynth binary install on benchmarking machine
-  (test infrastructure ready, just needs the binary to run the T-count + overhead validation).
-- Just completed: full ADR backfill (0005–0021, total 21 ADRs), gap-fill of the  Stage 1+2 documentation, and the Stage 3 kickoff materials.
+- **Stages 1 + 2 COMPLETE.** Stage 2.5 in progress.
+- **Stage 2.5 Epic A (Stim) + Epic B (QCEC) COMPLETE.** 139/139 tests pass on gcc13-stim.
+- **Project bumped to C++23** (required for std::expected; gcc-13 + clang-18 both support).
+- Issues closed today: #29, #30, #31, #32, #33, #34, #35, #36.
+- Remaining Stage 2.5: Epic C (benchmark corpus #38-#42), Epic D remainder (#37,#43-#45), CI job (#46).
 
 ## Current Phase
 
-**Stage 2 of 5: Synthesis Pass (T-Gate)** — Code complete; gate pending GridSynth install
-Previous: Stage 1 ✅ COMPLETE — 93 tests green, ADR-0001 Accepted, all 18 issues Done.
+**Stage 2.5: Verification & Reproducibility Harness** — Epic A+B complete.
+Previous: Stage 2 ✅ COMPLETE — 118 tests green, GridSynth gate passed.
 
 ## Active Stage
 
-**→ Stage 2.5: Verification & Reproducibility Harness** is up next, before Stage 3.
-
-This is a NEW stage inserted after the Stage 2 retrospective surfaced that
-Stage 3's "Stim says correct" gate has no plumbing without it. Estimated 4–6
-weeks. See `docs/phases/stage-2.5-verification/`.
-
-After Stage 2.5: **Stage 3 — Lattice Surgery Mapper** (8–12 weeks, hardest gate).
-All Stage 3 phase docs are pre-written at `docs/phases/stage-3-lattice-surgery/`.
+**Stage 2.5** — benchmark corpus (Epic C) and reproducibility infra (Epic D) remain.
+See `docs/phases/stage-2.5-verification-benchmark-harness/`.
 
 ## Active Story
 
-None active yet — Stage 2.5 has not been kicked off. The next session should:
-1. Read `docs/phases/stage-2.5-verification/spec.md` and `kickoff.md`
-2. Run `/pm:prd-parse` on the Stage 2.5 spec to generate the epic + tasks
-3. Begin with Stim FetchContent integration (the "no Stim integration"
-   gap noted in the retrospective)
+Epic C and D have not been started. Next session should work on:
+1. `#37`: QCEC golden circuits — commit 5 reference circuits under `bench/golden/qcec/`
+2. `#38`: QASMBench git submodule (shallow)
+3. `#43`: Dockerfile multi-stage (primary reproducibility deliverable)
 
 ## Next Action
 
-**Read the Stage 2.5 spec and run `/pm:prd-parse` to generate the epic.**
-
-After that, the first issue is "Wire Stim v1.15.0 via FetchContent into a new
-`verify/` library target, including SIMD-width pinning to 64 for goldens."
+**Begin issue #37: create `bench/golden/qcec/` with 5 circuits + expected verdicts.**
+Then #38 (QASMBench submodule) and #43 (Dockerfile).
 
 ## State of Work
 
@@ -73,9 +65,10 @@ After that, the first issue is "Wire Stim v1.15.0 via FetchContent into a new
 
 **Test count: 93/93 green on gcc-13 and clang-18 with -Werror and ASAN+UBSAN**
 
-**Stage 2 test count: 118/118 green on gcc-13, clang-18, clang-18-asan (2 skipped — no GridSynth binary)**
+**Stage 2 test count: 118/118 green on gcc-13, clang-18, clang-18-asan**
+**Stage 2.5 (Stim+QCEC) test count: 139/139 green on gcc13-stim (C++23)**
 
-### Stage 2 (CODE COMPLETE — gate pending GridSynth)
+### Stage 2 (COMPLETE — gate passed 2026-04-28)
 - ✅ Stage 2 spec written: `docs/phases/stage-2-synthesis/spec.md`
 - ✅ Stage 2 todo written: `docs/phases/stage-2-synthesis/todo.md`
 - ✅ Stage 2 kickoff written: `docs/phases/stage-2-synthesis/kickoff.md`
@@ -106,24 +99,22 @@ After that, the first issue is "Wire Stim v1.15.0 via FetchContent into a new
 
 ## Open Blockers
 
-- GridSynth binary needs to be installed on benchmark machine to close Stage 2 gate
-- Stage 2.5 work has not started; deferred Stim/QCEC integration since the team
-  was finishing Stage 2 first
-- ADR-0011 (phase-polynomial pass) is still Draft; decision deferred until
-  Stage 3 schedule clarity emerges
+- ADR-0011 (phase-polynomial pass) is still Draft; decision deferred until Stage 3 clarity.
+- Stage 2.5 Epic C (benchmark corpus) and Epic D (reproducibility infra) not started.
+- CI job for Stim/QCEC integration (#46) not added — stim preset exists but no GitHub Actions job.
 
 ## Next Action — Start Here on Next Session
 
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
-2. Run: cmake --preset gcc13-debug && cmake --build build/gcc13-debug -j && ctest --test-dir build/gcc13-debug
-3. Stage 2 gate (requires GridSynth binary):
-   a. Install GridSynth: https://github.com/kenmcken/newsynth (or brew install gridsynth)
-   b. cmake --preset gcc13-release && cmake --build build/gcc13-release -j
-   c. Run: ./scripts/bench-synthesis.sh build/gcc13-release  → overhead ≤5%
-   d. ctest --test-dir build/gcc13-release -R TCountValidation  → within 1%
-   e. /phase-exit to formally close Stage 2 and write exit-report.md
-4. Then begin Stage 3: Lattice Surgery Mapper
+2. Run: cmake --preset gcc13-stim && cmake --build build/gcc13-stim -j && ctest --test-dir build/gcc13-stim
+   → should be 139/139 green. If not, check CHANGELOG Failed Approaches for Stim/QCEC build fixes.
+3. Begin Stage 2.5 Epic C/D:
+   a. Issue #37: create bench/golden/qcec/ with 5 QASM reference circuits + expected_verdict.txt
+   b. Issue #38: git submodule add QASMBench (shallow)
+   c. Issue #43: write Dockerfile (Ubuntu 24.04 multi-stage; primary reproducibility gate)
+4. When Epic C+D done → /phase-exit for Stage 2.5
+5. Then start Stage 3: Lattice Surgery Mapper
 ```
 
 ## Failed Approaches — DO NOT RETRY

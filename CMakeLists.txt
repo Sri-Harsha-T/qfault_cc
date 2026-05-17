@@ -5,7 +5,7 @@ project(qfault VERSION 0.1.0 LANGUAGES CXX)
 include(cmake/dependency_versions.cmake)
 
 # ── Language standard ──────────────────────────────────────────────────────────
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -107,12 +107,32 @@ target_include_directories(libqfault
         ${CMAKE_SOURCE_DIR}/src
 )
 
-target_compile_features(libqfault PUBLIC cxx_std_20)
+target_compile_features(libqfault PUBLIC cxx_std_23)
 
 if(GRIDSYNTH_BINARY)
     target_compile_definitions(libqfault PUBLIC
         GRIDSYNTH_BINARY="${GRIDSYNTH_BINARY}"
         QFAULT_HAS_GRIDSYNTH=1)
+endif()
+
+# ── Oracle library: qfault_oracle (Stage 2.5) ─────────────────────────────────
+# Built only when Stim or QCEC is enabled. Holds StimOracle and QCECBridge.
+if(QFAULT_ENABLE_STIM OR QFAULT_ENABLE_QCEC)
+    file(GLOB_RECURSE QFAULT_ORACLE_SOURCES CONFIGURE_DEPENDS
+        "src/qfault/oracle/*.cpp")
+    if(QFAULT_ORACLE_SOURCES)
+        add_library(qfault_oracle STATIC ${QFAULT_ORACLE_SOURCES})
+        target_link_libraries(qfault_oracle PUBLIC libqfault)
+        target_include_directories(qfault_oracle
+            PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>)
+        target_compile_features(qfault_oracle PUBLIC cxx_std_23)
+        if(QFAULT_ENABLE_STIM)
+            qfault_link_stim(qfault_oracle)
+        endif()
+        if(QFAULT_ENABLE_QCEC)
+            qfault_link_qcec(qfault_oracle)
+        endif()
+    endif()
 endif()
 
 # ── Test binary: qfault_tests ──────────────────────────────────────────────────
@@ -134,6 +154,12 @@ if(QFAULT_TEST_SOURCES)
             QFAULT_HAS_GRIDSYNTH=1)
     endif()
 
+    if(TARGET qfault_oracle)
+        target_link_libraries(qfault_tests PRIVATE qfault_oracle)
+    endif()
+
+    # Always propagate Stim/QCEC compile definitions to the test binary so that
+    # #ifdef QFAULT_HAS_STIM guards in test files compile the real tests.
     if(QFAULT_ENABLE_STIM)
         qfault_link_stim(qfault_tests)
     endif()

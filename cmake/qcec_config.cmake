@@ -50,8 +50,14 @@ endif()
 message(STATUS "MQT QCEC ${QFAULT_QCEC_TAG} target 'MQT::QCEC' configured")
 
 # Convenience helper: link a target against QCEC.
+# mqt-core-qasm is the qasm3::Importer library; it is built by the mqt-core
+# FetchContent but is not exported through MQT::QCEC's transitive dependencies.
+# Link it explicitly so QCECBridge can parse QASM 3.0 strings.
 function(qfault_link_qcec target)
     target_link_libraries(${target} PRIVATE MQT::QCEC)
+    if(TARGET mqt-core-qasm)
+        target_link_libraries(${target} PRIVATE mqt-core-qasm)
+    endif()
     target_compile_definitions(${target} PRIVATE
         QFAULT_HAS_QCEC=1
         QFAULT_QCEC_VERSION="${QFAULT_QCEC_TAG}")
