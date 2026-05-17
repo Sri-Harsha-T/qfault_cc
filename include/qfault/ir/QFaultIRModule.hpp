@@ -4,6 +4,7 @@
 #include <qfault/ir/LogicalGate.hpp>
 #include <qfault/ir/LogicalQubit.hpp>
 #include <qfault/ir/PatchOp.hpp>
+#include <qfault/ir/PauliFrameUpdate.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -12,7 +13,9 @@
 
 namespace qfault {
 
-using Instruction = std::variant<LogicalGate, PatchOp>;
+// Instruction = logical gate | physical patch op | classical Pauli-frame annotation.
+// PauliFrameUpdate only appears in PHYSICAL-level modules (after LatticeSurgeryPass).
+using Instruction = std::variant<LogicalGate, PatchOp, PauliFrameUpdate>;
 
 struct QFaultIRModule {
     std::string name = {};

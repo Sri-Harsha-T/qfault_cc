@@ -5,6 +5,19 @@
 #include <sstream>
 #include <string_view>
 
+namespace {
+using qfault::Pauli;
+[[nodiscard]] static std::string_view pauliName(Pauli p) {
+    switch (p) {
+    case Pauli::I: return "I";
+    case Pauli::X: return "X";
+    case Pauli::Y: return "Y";
+    case Pauli::Z: return "Z";
+    }
+    return "?";
+}
+} // namespace
+
 namespace qfault {
 
 namespace {
@@ -78,6 +91,14 @@ void QFaultIRModule::dump(std::ostream& out) const {
                 }
                 out << " basis=" << measBasisName(op.basis)
                     << " @t=" << op.timeStep << "\n";
+            },
+            [&out](const PauliFrameUpdate& pfu) {
+                out << "PAULI_FRAME_UPDATE @t=" << pfu.timeStep;
+                for (const auto& c : pfu.corrections) {
+                    out << " " << pauliName(c.op)
+                        << "[" << c.qubit.name << ":" << c.qubit.index << "]";
+                }
+                out << "\n";
             },
         }, instr);
     }
