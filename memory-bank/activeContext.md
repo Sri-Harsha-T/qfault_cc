@@ -4,38 +4,46 @@
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
 > Persistent context for the next AI session. Update before `/clear`.
-_Last updated: 2026-05-17 — Stage 2.5 Epic A+B complete (Stim+QCEC wired); 8 issues closed; 139 tests green_
+_Last updated: 2026-05-17 — Stage 2.5 COMPLETE (all 17 issues closed); 144/144 tests green_
 
 ---
 ## Current state (2026-05-17)
 
-- **Stages 1 + 2 COMPLETE.** Stage 2.5 in progress.
-- **Stage 2.5 Epic A (Stim) + Epic B (QCEC) COMPLETE.** 139/139 tests pass on gcc13-stim.
-- **Project bumped to C++23** (required for std::expected; gcc-13 + clang-18 both support).
-- Issues closed today: #29, #30, #31, #32, #33, #34, #35, #36.
-- Remaining Stage 2.5: Epic C (benchmark corpus #38-#42), Epic D remainder (#37,#43-#45), CI job (#46).
+- **Stages 1 + 2 + 2.5 COMPLETE.**
+- **Stage 2.5:** All 17 issues closed (#29–#46). 144/144 tests pass on gcc13-stim.
+- **Exit report written:** `docs/phases/stage-2.5-verification-benchmark-harness/exit-report.md`
+- **Next:** Stage 3 — Lattice Surgery Mapper.
 
 ## Current Phase
 
-**Stage 2.5: Verification & Reproducibility Harness** — Epic A+B complete.
-Previous: Stage 2 ✅ COMPLETE — 118 tests green, GridSynth gate passed.
+**Stage 3: Lattice Surgery Mapper** — beginning next session.
+Previous: Stage 2.5 ✅ COMPLETE — 144 tests green; Stim+QCEC+golden+bench+CI all wired.
 
 ## Active Stage
 
-**Stage 2.5** — benchmark corpus (Epic C) and reproducibility infra (Epic D) remain.
-See `docs/phases/stage-2.5-verification-benchmark-harness/`.
+**Stage 3** — Logical CNOT → patch merge/split sequences + A* router.
+See `docs/phases/stage-3-lattice-surgery/` for the Stage 3 plan.
 
 ## Active Story
 
-Epic C and D have not been started. Next session should work on:
-1. `#37`: QCEC golden circuits — commit 5 reference circuits under `bench/golden/qcec/`
-2. `#38`: QASMBench git submodule (shallow)
-3. `#43`: Dockerfile multi-stage (primary reproducibility deliverable)
+Stage 3 has not been started. Next session should:
+1. Read `docs/phases/stage-3-lattice-surgery/` (spec, todo, kickoff if they exist)
+2. Create Stage 3 GitHub milestone and issues
+3. Implement `LatticeSurgeryPass` skeleton + `PatchCoord` routing
 
 ## Next Action
 
-**Begin issue #37: create `bench/golden/qcec/` with 5 circuits + expected verdicts.**
-Then #38 (QASMBench submodule) and #43 (Dockerfile).
+**Begin Stage 3: Lattice Surgery Mapper.**
+```
+1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
+2. Run: cmake --preset gcc13-stim && cmake --build build/gcc13-stim -j && ctest --test-dir build/gcc13-stim
+   → should be 144/144 green.
+3. Begin Stage 3:
+   a. Read docs/phases/stage-3-lattice-surgery/ (spec + plan)
+   b. Create GitHub milestone "Stage 3: Lattice Surgery"
+   c. Implement LatticeSurgeryPass skeleton
+4. Stage 3 gate: Stim oracle confirms BV-10 at d=5 produces correct logical output.
+```
 
 ## State of Work
 
@@ -66,7 +74,7 @@ Then #38 (QASMBench submodule) and #43 (Dockerfile).
 **Test count: 93/93 green on gcc-13 and clang-18 with -Werror and ASAN+UBSAN**
 
 **Stage 2 test count: 118/118 green on gcc-13, clang-18, clang-18-asan**
-**Stage 2.5 (Stim+QCEC) test count: 139/139 green on gcc13-stim (C++23)**
+**Stage 2.5 test count: 144/144 green on gcc13-stim (C++23)**
 
 ### Stage 2 (COMPLETE — gate passed 2026-04-28)
 - ✅ Stage 2 spec written: `docs/phases/stage-2-synthesis/spec.md`
@@ -87,39 +95,61 @@ Then #38 (QASMBench submodule) and #43 (Dockerfile).
 - ✅ #28: scripts/bench-synthesis.sh stage gate benchmark (commit 2a487b4)
 - ⬜ Stage gate formal sign-off (requires GridSynth binary installed)
 
+### Stage 2.5 (COMPLETE — 2026-05-17)
+- ✅ #29: cmake/dependency_versions.cmake wired
+- ✅ #30: Stim v1.15.0 FetchContent + libstim + gcc13-stim preset
+- ✅ #31: StimOracle helper (ir_to_stim_text, circuits_clifford_equivalent)
+- ✅ #32: Detector-distribution backstop (4 tests)
+- ✅ #33: SIMD-width discipline (kStimW=64, static_assert, pragma guards)
+- ✅ #34: MQT QCEC v3.5.0 FetchContent
+- ✅ #35: QCECBridge (check_equivalence, is_passing, EquivalenceResult)
+- ✅ #36: Qubit-threshold dispatch (kQcecStrictThreshold=8)
+- ✅ #37: bench/golden/qcec/ (5 circuit pairs + test_qcec_golden.cpp)
+- ✅ #38: bench/circuits/qasmbench/ shallow submodule
+- ✅ #39: bench/circuits/feynman/ shallow submodule + dotqc_to_qasm.sh
+- ✅ #40: bench/scripts/gen_mqtbench.py
+- ✅ #41: bench/tier1/run.sh
+- ✅ #42: bench/tier2/run.sh
+- ✅ #43: Dockerfile multi-stage (builder + runtime)
+- ✅ #44: flake.nix
+- ✅ #45: bench/Makefile + plot.py + check_regression.py + stage2_baseline.csv
+- ✅ #46: CI stim-integration job (.github/workflows/ci.yml)
+- ✅ Exit report: docs/phases/stage-2.5-verification-benchmark-harness/exit-report.md
+- ✅ Project bumped to C++23 globally
+
 ## Recent Decisions (last 5 sessions)
 
 | Date | Decision | ADR |
 |------|----------|-----|
-| 2026-04-25 | TGateSynthesisPass inherits PassBase (virtual at pass level, not gate level) | ADR-0002 impl |
-| 2026-04-25 | SKProvider uses depth-7 BFS basic set (~512 entries); not full depth-3 SK recursion | — |
-| 2026-04-25 | spec "no T remain" assertion requires CliffordOnlyProvider mock, not SK/GridSynth | — |
-| 2026-04-25 | quick-test.sh fixed to use gcc13-debug preset (system gcc 9.4 can't compile C++20) | — |
-| 2026-04-25 | ADR-0001 confirmed: variant<LogicalGate,PatchOp> viable | ADR-0001 accepted |
+| 2026-05-17 | Bumped C++23 globally (gcc-13 + clang-18 both support; needed for std::expected) | — |
+| 2026-05-17 | kStimW=64 hardcoded (SIMD_WIDTH CMake var doesn't propagate to consumer TUs) | ADR-0021 |
+| 2026-05-17 | Empty Stim circuit anchored with I-gates before tableau comparison | ADR-0021 |
+| 2026-05-17 | QFAULT_HAS_STIM propagated to test binary explicitly (not via oracle linkage) | — |
+| 2026-05-17 | mqt-core-qasm linked explicitly in qfault_link_qcec() (not transitive from QCEC) | — |
 
 ## Open Blockers
 
 - ADR-0011 (phase-polynomial pass) is still Draft; decision deferred until Stage 3 clarity.
-- Stage 2.5 Epic C (benchmark corpus) and Epic D (reproducibility infra) not started.
-- CI job for Stim/QCEC integration (#46) not added — stim preset exists but no GitHub Actions job.
+- Stage 3 has not been started.
+- `flake.lock` not committed (requires `nix flake lock` on Nix-enabled machine).
+- GridSynth Haskell binary not in Dockerfile (manual step; documented in Dockerfile).
 
 ## Next Action — Start Here on Next Session
 
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
 2. Run: cmake --preset gcc13-stim && cmake --build build/gcc13-stim -j && ctest --test-dir build/gcc13-stim
-   → should be 139/139 green. If not, check CHANGELOG Failed Approaches for Stim/QCEC build fixes.
-3. Begin Stage 2.5 Epic C/D:
-   a. Issue #37: create bench/golden/qcec/ with 5 QASM reference circuits + expected_verdict.txt
-   b. Issue #38: git submodule add QASMBench (shallow)
-   c. Issue #43: write Dockerfile (Ubuntu 24.04 multi-stage; primary reproducibility gate)
-4. When Epic C+D done → /phase-exit for Stage 2.5
-5. Then start Stage 3: Lattice Surgery Mapper
+   → should be 144/144 green. If not, check CHANGELOG Failed Approaches.
+3. Begin Stage 3:
+   a. Read docs/phases/stage-3-lattice-surgery/ (spec + plan)
+   b. Run /pm:epic-decompose to create Stage 3 GitHub issues
+   c. Implement LatticeSurgeryPass skeleton
+4. Stage 3 gate: circuits_clifford_equivalent() confirms BV-10 at d=5 = correct logical output.
 ```
 
 ## Failed Approaches — DO NOT RETRY
 
-*(See CHANGELOG.md "Failed Approaches" section for the full table)*
+*(See CHANGELOG.md "Failed Approaches" section for the full table — 8+ entries)*
 
 - **gcc-13 `-Wmissing-field-initializers`**: fires when designated init omits fields
   even with correct defaults. Fix: add `= {}` or `= std::nullopt` as default member
@@ -135,7 +165,7 @@ Then #38 (QASMBench submodule) and #43 (Dockerfile).
 
 ## Don't Forget
 
-- **8 entries in `CHANGELOG.md` "Failed Approaches" — read all before proposing**
+- **8+ entries in `CHANGELOG.md` "Failed Approaches" — read all before proposing**
   anything in routing, synthesis, A*, or factory cost code.
 - Three numerical-target retractions from the retrospective:
   1. Litinski Section 5 has NO BV-10/QFT/adder reference numbers — target the
@@ -150,10 +180,10 @@ Then #38 (QASMBench submodule) and #43 (Dockerfile).
 ## Memory pointers (for /resume)
 
 - `CLAUDE.md` → conventions, all 21 ADRs cross-referenced
-- `CHANGELOG.md` → "Failed Approaches" (8 entries) + stage progress log
+- `CHANGELOG.md` → "Failed Approaches" (8+ entries) + stage progress log
 - `docs/adr/README.md` → ADR index
-- `docs/phases/stage-2.5-verification/` → next stage spec
-- `docs/phases/stage-3-lattice-surgery/` → full Stage 3 treatment, ready to kick off
+- `docs/phases/stage-2.5-verification-benchmark-harness/exit-report.md` → Stage 2.5 exit report
+- `docs/phases/stage-3-lattice-surgery/` → Stage 3 plan (ready to kick off)
 - `.claude/rules/{cpp,qec,routing}.md` → path-scoped rules
 - `.claude/agents/{cpp-pro,reviewer}.md` → specialised subagents
 
@@ -167,19 +197,24 @@ include/qfault/
                 synthesis/  SynthesisProvider (Concept), GridSynthProvider,
                             SKProvider, TGateSynthesisPass
   frontend/     Lexer, Parser (ParseResult)
+  oracle/       StimOracle, QCECBridge (Stage 2.5)
   util/         Overload (std::visit helper)
 src/qfault/
   ir/           QFaultIRModule.cpp (dump implementation)
   frontend/     Lexer.cpp, Parser.cpp
+  oracle/       StimOracle.cpp, QCECBridge.cpp (Stage 2.5)
 tests/
   unit/         test_LogicalGate, test_PatchOp, test_QFaultIRModule,
                 test_PassBase, test_PassContext, test_PassManager,
                 test_Lexer, test_Parser
   integration/  test_ir_two_level, test_noop_roundtrip, test_qasm_roundtrip,
-                test_synthesis_roundtrip
-src/qfault/
-  passes/synthesis/  GridSynthProvider.cpp, SKProvider.cpp
-docs/phases/
-  stage-1-ir-pass-manager/  spec, todo (✅), kickoff, exit-report, prompt_plan
-  stage-2-synthesis/        spec, todo (✅ code), kickoff, prompt_plan
+                test_synthesis_roundtrip, test_stim_oracle, test_stim_detector_dist,
+                test_qcec_bridge, test_qcec_golden (Stage 2.5)
+bench/
+  golden/qcec/  BV-4/6/8, QFT-4, adder-4 circuit pairs + expected verdicts
+  golden/       stage2_baseline.csv
+  circuits/     qasmbench/ (submodule), feynman/ (submodule)
+  scripts/      gen_mqtbench.py, dotqc_to_qasm.sh, plot.py, check_regression.py
+  tier1/, tier2/ run.sh harnesses
+  Makefile      figures/regression targets
 ```

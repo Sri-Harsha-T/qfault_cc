@@ -148,6 +148,9 @@ if(QFAULT_TEST_SOURCES)
     target_link_libraries(qfault_tests PRIVATE libqfault GTest::gtest_main)
     target_include_directories(qfault_tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
+    target_compile_definitions(qfault_tests PRIVATE
+        QFAULT_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
     if(GRIDSYNTH_BINARY)
         target_compile_definitions(qfault_tests PRIVATE
             GRIDSYNTH_BINARY="${GRIDSYNTH_BINARY}"

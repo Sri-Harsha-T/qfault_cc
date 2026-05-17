@@ -57,13 +57,13 @@ The "Failed Approaches" section is **mandatory reading** — do not retry listed
 - [x] `scripts/bench-synthesis.sh` overhead benchmark (#28)
 - [x] Stage 2 gate (2026-04-28): T-count within 1% ✅ (fixed arg order + -p + precision); bench baseline 3633ms / 300 T-gates ✅
 
-### Stage 2.5: Verify + Bench (started 2026-04-28)
+### Stage 2.5: Verify + Bench ✅ COMPLETE (2026-05-17)
 - [x] GitHub milestone #11 "Stage 2.5: Verify + Bench" created
 - [x] 17 GitHub issues created (#29–#45) across 4 epics (A/B/C/D) + issue #46 (CI)
 - [x] `cmake/dependency_versions.cmake` wired into `CMakeLists.txt` (issue #29, closed)
 - [x] QFAULT_ENABLE_STIM / QFAULT_ENABLE_QCEC options added to CMakeLists.txt
 - [x] `cmake/stim_config.cmake` and `cmake/qcec_config.cmake` written and working
-- [x] `gcc13-stim` / `clang18-stim` CMake presets (issue #46 partial; CI job still needed)
+- [x] `gcc13-stim` / `clang18-stim` CMake presets (issue #46 partial; CI job added)
 - [x] Stim v1.15.0 FetchContent integration — 139/139 tests pass (issue #30, closed 2026-05-17)
 - [x] StimOracle helper: `ir_to_stim_text()` + `circuits_clifford_equivalent()` (issue #31, closed)
 - [x] Detector-distribution backstop: 4 tests on reference samples + 1024-shot sweep (issue #32, closed)
@@ -72,11 +72,18 @@ The "Failed Approaches" section is **mandatory reading** — do not retry listed
 - [x] QCECBridge: `check_equivalence()`, `is_passing()`, `EquivalenceResult` enum (issue #35, closed)
 - [x] Qubit-threshold dispatch: `kQcecStrictThreshold=8` (issue #36, closed 2026-05-17)
 - [x] Project bumped to C++23 globally (gcc-13 + clang-18 fully support; required for std::expected)
-- [ ] QCEC golden circuits: bench/golden/qcec/ (issue #37)
-- [ ] Benchmark corpus submodules (#38, #39) and harnesses (#41, #42)
-- [ ] bench/scripts utilities (#40, #45)
-- [ ] Reproducibility: Dockerfile (#43), flake.nix (#44)
-- [ ] CI Stim/QCEC integration job (issue #46 remainder)
+- [x] QCEC golden circuits: bench/golden/qcec/ (BV-4/6/8, QFT-4, adder-4) + test_qcec_golden.cpp (issue #37, closed 2026-05-17)
+- [x] QASMBench shallow submodule: bench/circuits/qasmbench/ (issue #38, closed 2026-05-17)
+- [x] Feynman benchmarks shallow submodule + dotqc_to_qasm.sh adapter (issue #39, closed 2026-05-17)
+- [x] bench/scripts/gen_mqtbench.py MQT Bench generator wrapper (issue #40, closed 2026-05-17)
+- [x] bench/tier1/run.sh — 10k angle sweep through GridSynthProvider, CSV output (issue #41, closed 2026-05-17)
+- [x] bench/tier2/run.sh — QASMBench small/ end-to-end benchmark, CSV output (issue #42, closed 2026-05-17)
+- [x] Dockerfile multi-stage (builder + runtime, Ubuntu 24.04) (issue #43, closed 2026-05-17)
+- [x] flake.nix + Nix dev shell (gcc-13/clang-18/cmake pinned) (issue #44, closed 2026-05-17)
+- [x] bench/Makefile (figures/tier1/tier2/regression targets), plot.py, check_regression.py, stage2_baseline.csv (issue #45, closed 2026-05-17)
+- [x] CI stim-integration job (.github/workflows/ci.yml, gcc13-stim preset) (issue #46, closed 2026-05-17)
+
+**Final test count: 144/144 green on gcc13-stim (C++23)**
 
 ### Stage 3: Lattice Surgery Mapper
 - [ ] Logical CNOT → patch merge/split sequences

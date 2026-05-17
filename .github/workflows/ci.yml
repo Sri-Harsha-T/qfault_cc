@@ -35,6 +35,31 @@ jobs:
       - name: Test
         run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure
 
+  stim-integration:
+    name: Stim+QCEC integration (gcc13-stim)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false  # bench submodules not needed for Stim/QCEC tests
+
+      - name: Install compilers and tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            g++-13 make
+          pip3 install --user cmake --quiet
+
+      - name: Configure (gcc13-stim — enables QFAULT_ENABLE_STIM + QFAULT_ENABLE_QCEC)
+        run: ~/.local/bin/cmake --preset gcc13-stim
+
+      - name: Build
+        run: ~/.local/bin/cmake --build build/gcc13-stim -j $(nproc)
+
+      - name: Test (Stim oracle + QCEC bridge + golden circuits)
+        run: ctest --test-dir build/gcc13-stim --output-on-failure
+
   asan:
     name: ASAN+UBSAN (clang18)
     runs-on: ubuntu-24.04

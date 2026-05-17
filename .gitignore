@@ -9,3 +9,6 @@ compile_commands.json
 *.gcno
 CTestTestfile.cmake
 *_include.cmake
+bench/_generated/
+bench/results/
+bench/plots/

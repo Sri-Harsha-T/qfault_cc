@@ -1,0 +1,6 @@
+[submodule "bench/circuits/qasmbench"]
+	path = bench/circuits/qasmbench
+	url = https://github.com/pnnl/QASMBench
+[submodule "bench/circuits/feynman"]
+	path = bench/circuits/feynman
+	url = https://github.com/meamy/feynman

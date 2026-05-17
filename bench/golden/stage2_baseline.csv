@@ -1,0 +1,8 @@
+metric,value,unit,date,preset,notes
+synthesis_wall_time_300_tgates,3633,ms,2026-04-28,gcc13-release,bench-synthesis.sh Stage 2 gate measurement
+synthesis_overhead_per_tgate,12.11,ms,2026-04-28,gcc13-release,3633ms / 300 T-gates
+pi_over_8_tcount_eps1e-10,98,gates,2026-04-28,gcc13-release,GridSynth pi/8 at epsilon=1e-10
+pi_over_16_tcount_eps1e-10,100,gates,2026-04-28,gcc13-release,GridSynth pi/16 at epsilon=1e-10
+pi_over_32_tcount_eps1e-10,100,gates,2026-04-28,gcc13-release,GridSynth pi/32 at epsilon=1e-10
+tgate_exact_tcount,1,gates,2026-04-28,gcc13-release,T gate (pi/4) is exact — T-count = 1
+stage2_gate_overhead_limit_pct,5,pct,2026-04-28,spec,Stage 2 DoD: overhead <= 5% vs naive loop
