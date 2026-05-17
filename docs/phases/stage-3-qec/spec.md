@@ -57,8 +57,8 @@ The gate is encoded in `tests/integration/test_stage_3_gate.cpp`. It is **not**:
   data patches in row 1+
 - `intermediateLayout(n) → PatchSpec` with `2n + 4` tiles
   (per body text — Fig. 13a caption "2.5n+4" is a known erratum, document)
-- `fastLayout(n) → PatchSpec` with `2n + ⌈√(2n)⌉ + 1` tiles, side rounded up
-  when n/2 not a perfect square
+- `fastLayout(n) → PatchSpec` with `2n + ⌈√(8n)⌉ + 1` tiles, side rounded up
+  when 8n is not a perfect square (confirmed against Litinski 2019 paper body text)
 - A `LayoutChoice` enum + selection function `chooseLayout(spec) → LayoutChoice`
   based on T-depth and factory-throughput targets
 - **Unit tests:** for each layout, assert tile count matches formula for n in

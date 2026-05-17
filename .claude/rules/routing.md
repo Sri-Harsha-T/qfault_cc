@@ -93,14 +93,16 @@ Three layouts, parameterized by **n** (logical qubit count):
 **Caveat:** Litinski Fig. 13a caption says "2.5n+4" but body text says "2n+4".
 Use the body text. Document this in ADR-0019.
 
-**Fast block formula caveat:** `2n + √(8n) + 1` is exact only when n/2 is a
-perfect square; otherwise round side length UP and shorten the last column.
+**Fast block formula caveat:** `2n + ⌈√(8n)⌉ + 1` is exact only when 8n is a
+perfect square; otherwise round ⌈√(8n)⌉ UP. Confirmed against Litinski 2019
+paper body text (the earlier routing.md code example erroneously used `sqrt(2n)`
+instead of `sqrt(8n)` — that was wrong and has been corrected).
 Implement as:
 
 ```cpp
 constexpr std::size_t fastBlockTileCount(std::size_t n) {
-    // Side length = ceil(sqrt(2n))
-    const std::size_t side = static_cast<std::size_t>(std::ceil(std::sqrt(2.0 * n)));
+    // ⌈√(8n)⌉ — confirmed Litinski 2019 §5.3 fast block formula
+    const std::size_t side = static_cast<std::size_t>(std::ceil(std::sqrt(8.0 * n)));
     return 2 * n + side + 1;
 }
 ```

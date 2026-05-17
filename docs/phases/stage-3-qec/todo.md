@@ -28,7 +28,7 @@
       (use integer arithmetic: `n + n/2 + 3`)
 - [ ] **#3.2.3** `intermediateLayout(n)` — tile count `2n+4` (body text;
       document Fig. 13a "2.5n+4" erratum)
-- [ ] **#3.2.4** `fastLayout(n)` — tile count `2n + ⌈√(2n)⌉ + 1`
+- [ ] **#3.2.4** `fastLayout(n)` — tile count `2n + ⌈√(8n)⌉ + 1` (confirmed Litinski 2019 §5.3; earlier doc had √(2n) which was wrong)
 - [ ] **#3.2.5** `chooseLayout(spec)` — selection function based on T-depth
       and factory-throughput
 - [ ] **#3.2.6** `tests/unit/test_Layouts.cpp` — assert tile counts for
