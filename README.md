@@ -1,18 +1,19 @@
-# QFault — Fault-Tolerant Quantum Compiler (C++20)
+# QFault — Fault-Tolerant Quantum Compiler (C++23)
 
 [![CI](https://github.com/Sri-Harsha-T/qfault_cc/actions/workflows/ci.yml/badge.svg)](https://github.com/Sri-Harsha-T/qfault_cc/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
+[![C++23](https://img.shields.io/badge/C%2B%2B-23-blue.svg)](https://en.cppreference.com/w/cpp/23)
 
-QFault is an open-source, modular C++20 compiler-pass library that takes a
+QFault is an open-source, modular C++23 compiler-pass library that takes a
 logical quantum circuit (Clifford+T) and compiles it to fault-tolerant gate
 sequences for surface-code execution, validated against the Stim simulator
 and the MQT QCEC equivalence checker.
 
-> **Status (April 2026):** Stages 1 and 2 are complete (211/211 passing tests).
-> Stage 3 (lattice surgery routing) is the active work. v0.1.0 release ETA Q4 2026.
-> Numerical claims, scope, and design decisions are recorded as
-> [Architecture Decision Records](docs/adr/README.md).
+> **Status (May 2026):** Stages 1, 2, and 2.5 are complete.
+> 144/144 tests pass on the Stim+QCEC build (`gcc13-stim`); 123/123 on the
+> standard debug/release builds. Stage 3 (lattice surgery routing) is now
+> active. v0.1.0 release ETA Q4 2026. Numerical claims, scope, and design
+> decisions are recorded as [Architecture Decision Records](docs/adr/README.md).
 
 ---
 
@@ -46,17 +47,21 @@ emission, with an LLVM-inspired `PassManager` and a C++20 Concept-based
   Stim tableau-equivalence on Clifford segments + MQT QCEC equivalence on
   Clifford+T blocks ≤ 8 qubits as CI gates. Coq pass proofs are an optional
   Stage 7 stretch ([ADR-0009](docs/adr/0009-validation-not-verification.md)).
+- **Not C++20.** The codebase uses `std::expected<T, E>` (C++23) and requires
+  gcc-13 or clang-18. gcc-9 (Ubuntu 20.04 default) cannot compile it — use the
+  named presets (`gcc13-debug`, `clang18-debug`, etc.) which set the compiler
+  explicitly.
 
 ## What's actually shipped
 
 | Stage | Component | Status | Test count |
 |-------|-----------|--------|-----------|
 | 1 | IR + PassManager + QASM 3.0 frontend | ✅ Complete | 93 |
-| 2 | T-gate synthesis (`GridSynthProvider`, `BFSTableProvider`) | ✅ Code complete | 118 |
-| 2.5 | Stim + MQT QCEC integration, Dockerfile, flake.nix | 🔜 Next | — |
-| 3 | Lattice surgery routing (A* + Litinski templates) | 🚧 Planned | — |
+| 2 | T-gate synthesis (`GridSynthProvider`, `BFSTableProvider`) | ✅ Complete | 118 |
+| 2.5 | Stim v1.15.0 + MQT QCEC v3.5.0 oracle, bench corpus, Dockerfile, flake.nix, CI | ✅ Complete | 144 (stim build) |
+| 3 | Lattice surgery routing (A* + Litinski templates + EAF scheduler) | 🚧 **Active** | — |
 | 4 | MSD scheduling + Beverland 2022 factory catalog | 🚧 Planned | — |
-| 5 | Output backends (QASM 3.0, QIR, Stim native) + Python | 🚧 Planned | — |
+| 5 | Output backends (QASM 3.0, QIR, Stim native) + Python bindings | 🚧 Planned | — |
 | 6 | Native Ross-Selinger + Kliuchnikov-2023 (optional) | 🚧 Planned | — |
 | 7 | Formal-methods or MLIR stretch (optional) | 🚧 Planned | — |
 
@@ -65,10 +70,15 @@ The full roadmap with falsifiable stage gates is in [ROADMAP.md](ROADMAP.md).
 ## Quick start
 
 ```bash
-# Build (requires CMake ≥ 3.21, gcc-13 or clang-18)
+# Build (requires CMake ≥ 3.21, gcc-13 or clang-18; C++23)
 cmake --preset gcc13-debug
 cmake --build build/gcc13-debug -j
 ctest --test-dir build/gcc13-debug --output-on-failure
+
+# With Stim v1.15.0 + MQT QCEC v3.5.0 (Stage 2.5 oracle — downloads on first build)
+cmake --preset gcc13-stim
+cmake --build build/gcc13-stim -j
+ctest --test-dir build/gcc13-stim --output-on-failure
 
 # Optional: install GridSynth for production synthesis
 #   https://github.com/kenmcken/newsynth (Haskell-based)
@@ -80,10 +90,10 @@ ctest --test-dir build/gcc13-debug --output-on-failure
 
 ## Project structure
 
-- **`include/qfault/`** — public C++ API (header-only IR types, PassManager,
-  Concept definitions). Path-scoped rules live in `.claude/rules/cpp.md` and
-  `.claude/rules/qec.md`.
-- **`src/qfault/`** — pass implementations and frontend
+- **`include/qfault/`** — public C++ API: IR types, PassManager, Concept
+  definitions, `oracle/StimOracle.hpp`, `oracle/QCECBridge.hpp`. Path-scoped
+  rules live in `.claude/rules/cpp.md` and `.claude/rules/qec.md`.
+- **`src/qfault/`** — pass implementations, frontend, and oracle backends
 - **`tests/{unit,integration,reference}/`** — GoogleTest-based test suite
 - **`docs/adr/`** — Architecture Decision Records (MADR-lite, 18 ADRs)
 - **`docs/phases/stage-N-*/`** — per-stage spec, todo, kickoff, exit-report,
@@ -109,8 +119,9 @@ The reproducibility apparatus (Stage 2.5 deliverables) includes:
 - **`papers/<venue>/`** directory frozen at submission
 
 Failed approaches are logged in [`CHANGELOG.md`](CHANGELOG.md) under the
-"Failed Approaches" heading (eight entries currently); this is unusual project
-hygiene and is referenced in the artifact submission ([ADR-0014](docs/adr/0014-failed-approach-tracking.md)).
+"Failed Approaches" heading (ten entries currently, including seven Stim/QCEC
+build issues from Stage 2.5); this is unusual project hygiene and is
+referenced in the artifact submission ([ADR-0014](docs/adr/0014-failed-approach-tracking.md)).
 
 ## Citing QFault
 
@@ -120,10 +131,10 @@ For now, please cite this repository:
 ```bibtex
 @software{qfault_2026,
   author       = {Sri-Harsha-T},
-  title        = {QFault: A C++20 Surface-Code-First Fault-Tolerant Quantum Compiler},
+  title        = {QFault: A C++23 Surface-Code-First Fault-Tolerant Quantum Compiler},
   year         = {2026},
   url          = {https://github.com/Sri-Harsha-T/qfault_cc},
-  note         = {v0.1.0-stage2}
+  note         = {v0.1.0-stage3}
 }
 ```
 

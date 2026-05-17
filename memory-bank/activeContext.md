@@ -4,7 +4,7 @@
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
 > Persistent context for the next AI session. Update before `/clear`.
-_Last updated: 2026-05-17 — Stage 2.5 COMPLETE (all 17 issues closed); 144/144 tests green_
+_Last updated: 2026-05-17 — Stage 3 issues #47–#55 created; README updated; ready to implement_
 
 ---
 ## Current state (2026-05-17)
@@ -12,38 +12,51 @@ _Last updated: 2026-05-17 — Stage 2.5 COMPLETE (all 17 issues closed); 144/144
 - **Stages 1 + 2 + 2.5 COMPLETE.**
 - **Stage 2.5:** All 17 issues closed (#29–#46). 144/144 tests pass on gcc13-stim.
 - **Exit report written:** `docs/phases/stage-2.5-verification-benchmark-harness/exit-report.md`
-- **Next:** Stage 3 — Lattice Surgery Mapper.
+- **Stage 3:** 9 GitHub issues created (#47–#55). Implementation has NOT started.
+- **README** updated to C++23, Stage 3 active, gcc13-stim quick start added.
 
 ## Current Phase
 
-**Stage 3: Lattice Surgery Mapper** — beginning next session.
+**Stage 3: Lattice Surgery Mapper** — issues created, ready to implement.
 Previous: Stage 2.5 ✅ COMPLETE — 144 tests green; Stim+QCEC+golden+bench+CI all wired.
 
 ## Active Stage
 
 **Stage 3** — Logical CNOT → patch merge/split sequences + A* router.
-See `docs/phases/stage-3-lattice-surgery/` for the Stage 3 plan.
+Spec: `docs/phases/stage-3-qec/` (NOT stage-3-lattice-surgery — that path is wrong).
 
 ## Active Story
 
-Stage 3 has not been started. Next session should:
-1. Read `docs/phases/stage-3-lattice-surgery/` (spec, todo, kickoff if they exist)
-2. Create Stage 3 GitHub milestone and issues
-3. Implement `LatticeSurgeryPass` skeleton + `PatchCoord` routing
+**Start with #47** (3-A-1: A* router on tile grid) — unblocked, no dependencies.
+Issue sequence: #47 → #48 → #49 → #50 → #51 → #52 → #53 → #54 → #55.
 
 ## Next Action
 
-**Begin Stage 3: Lattice Surgery Mapper.**
+**Implement Stage 3 starting with issue #47.**
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
 2. Run: cmake --preset gcc13-stim && cmake --build build/gcc13-stim -j && ctest --test-dir build/gcc13-stim
-   → should be 144/144 green.
-3. Begin Stage 3:
-   a. Read docs/phases/stage-3-lattice-surgery/ (spec + plan)
-   b. Create GitHub milestone "Stage 3: Lattice Surgery"
-   c. Implement LatticeSurgeryPass skeleton
-4. Stage 3 gate: Stim oracle confirms BV-10 at d=5 produces correct logical output.
+   → must be 144/144 green before touching code.
+3. Read docs/phases/stage-3-qec/ (spec.md, todo.md, kickoff.md if present).
+4. Implement issue #47: AStarRouter — NodeId=uint32_t, 4-connected tile grid,
+   boundary enforcement (X↔X or Z↔Z), sanitizer-clean, tests/unit/test_AStar.cpp.
+5. Stage 3 gate: test_stage_3_gate.cpp — BV-10 d=5, has_flow for 10 observables,
+   intermediate tile count = 24.
 ```
+
+## Stage 3 Issues (GitHub #47–#55)
+
+| # | Epic | Story | Title |
+|---|------|-------|-------|
+| #47 | A | 3-A-1 | A* router on tile grid |
+| #48 | A | 3-A-2 | Litinski layout templates (compact/intermediate/fast) |
+| #49 | B | 3-B-1 | LatticeSurgeryPass skeleton + logical CNOT recipe (ADR-0020) |
+| #50 | B | 3-B-2 | Silva 2024 EAF scheduler |
+| #51 | C | 3-C-1 | StimBackend emitter |
+| #52 | C | 3-C-2 | Stim has_flow oracle |
+| #53 | D | 3-D-1 | BV-10 d=5 golden files |
+| #54 | D | 3-D-2 | Stage 3 gate test (9-predicate end-to-end) |
+| #55 | X | 3-X-1 | Cross-cutting infra (ASAN+UBSAN, CHANGELOG, memory bank) |
 
 ## State of Work
 
@@ -117,6 +130,19 @@ Stage 3 has not been started. Next session should:
 - ✅ Exit report: docs/phases/stage-2.5-verification-benchmark-harness/exit-report.md
 - ✅ Project bumped to C++23 globally
 
+### Stage 3: Lattice Surgery Mapper (IN PROGRESS — issues created 2026-05-17)
+- ✅ README updated: C++23 badge, Stage 3 active, gcc13-stim quick start
+- ✅ 9 GitHub issues created (#47–#55) — see "Stage 3 Issues" table above
+- ⬜ #47 (3-A-1): A* router on tile grid — **START HERE**
+- ⬜ #48 (3-A-2): Litinski layout templates
+- ⬜ #49 (3-B-1): LatticeSurgeryPass skeleton + logical CNOT (ADR-0020)
+- ⬜ #50 (3-B-2): Silva 2024 EAF scheduler
+- ⬜ #51 (3-C-1): StimBackend emitter
+- ⬜ #52 (3-C-2): Stim has_flow oracle
+- ⬜ #53 (3-D-1): BV-10 d=5 golden files
+- ⬜ #54 (3-D-2): Stage 3 gate test (9-predicate end-to-end)
+- ⬜ #55 (3-X-1): Cross-cutting infra
+
 ## Recent Decisions (last 5 sessions)
 
 | Date | Decision | ADR |
@@ -130,7 +156,7 @@ Stage 3 has not been started. Next session should:
 ## Open Blockers
 
 - ADR-0011 (phase-polynomial pass) is still Draft; decision deferred until Stage 3 clarity.
-- Stage 3 has not been started.
+- Stage 3 GitHub milestone not yet created (tool unavailable; issues #47–#55 exist without a milestone).
 - `flake.lock` not committed (requires `nix flake lock` on Nix-enabled machine).
 - GridSynth Haskell binary not in Dockerfile (manual step; documented in Dockerfile).
 
@@ -139,12 +165,14 @@ Stage 3 has not been started. Next session should:
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
 2. Run: cmake --preset gcc13-stim && cmake --build build/gcc13-stim -j && ctest --test-dir build/gcc13-stim
-   → should be 144/144 green. If not, check CHANGELOG Failed Approaches.
-3. Begin Stage 3:
-   a. Read docs/phases/stage-3-lattice-surgery/ (spec + plan)
-   b. Run /pm:epic-decompose to create Stage 3 GitHub issues
-   c. Implement LatticeSurgeryPass skeleton
-4. Stage 3 gate: circuits_clifford_equivalent() confirms BV-10 at d=5 = correct logical output.
+   → must be 144/144 green before touching code.
+3. Read: docs/phases/stage-3-qec/ (spec.md, todo.md) — Stage 3 docs live here, NOT stage-3-lattice-surgery.
+4. Implement #47 (3-A-1): AStarRouter
+   - NodeId = uint32_t, signed int64_t edge costs
+   - 4-connected grid, boundary X↔X / Z↔Z enforcement
+   - tests/unit/test_AStar.cpp
+5. Stage 3 gate (issue #54): parse BV-10 → synthesise → route → Stim emit →
+   has_flow for all 10 observables; intermediate tile count = 24 exactly.
 ```
 
 ## Failed Approaches — DO NOT RETRY
@@ -183,7 +211,7 @@ Stage 3 has not been started. Next session should:
 - `CHANGELOG.md` → "Failed Approaches" (8+ entries) + stage progress log
 - `docs/adr/README.md` → ADR index
 - `docs/phases/stage-2.5-verification-benchmark-harness/exit-report.md` → Stage 2.5 exit report
-- `docs/phases/stage-3-lattice-surgery/` → Stage 3 plan (ready to kick off)
+- `docs/phases/stage-3-qec/` → Stage 3 spec + todo (use this path, not stage-3-lattice-surgery)
 - `.claude/rules/{cpp,qec,routing}.md` → path-scoped rules
 - `.claude/agents/{cpp-pro,reviewer}.md` → specialised subagents
 
