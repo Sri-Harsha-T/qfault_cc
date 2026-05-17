@@ -13,6 +13,7 @@
 #include <qfault/ir/QFaultIRModule.hpp>
 
 #include <expected>
+#include <span>
 #include <string>
 
 // Use W=64 for cross-machine reproducibility (ADR-0009/ADR-0021).
@@ -47,6 +48,39 @@ ir_to_stim_text(const QFaultIRModule& mod);
 // Returns error → one of the modules contains non-Clifford gates or a qubit mismatch.
 [[nodiscard]] std::expected<bool, std::string>
 circuits_clifford_equivalent(const QFaultIRModule& a, const QFaultIRModule& b);
+
+// ── has_flow oracle (ADR-0021, S3.6) ─────────────────────────────────────────
+
+// Primary equivalence check: verify that `circuit` has all of the given
+// stabilizer flows (ADR-0021).
+//
+// Uses `stim::sample_if_circuit_has_stabilizer_flows` with `num_samples`
+// randomization shots. Each sample independently catches flow violations with
+// probability ≥ 1/2, giving false-positive rate 2⁻ⁿᵘᵐˢᵃᵐᵖˡᵉˢ.
+//
+// Returns true  → all flows passed every sample.
+// Returns false → at least one flow failed.
+// Returns error → circuit or flow construction error.
+[[nodiscard]] std::expected<bool, std::string>
+checkHasFlow(const stim::Circuit& circuit,
+             std::span<const stim::Flow<kStimW>> flows,
+             std::size_t num_samples = 256);
+
+// Backstop equivalence check: strip noise from both circuits and verify that
+// they implement the same logical unitary (for measurement-free circuits) or
+// have matching detector/observable structure (for measured circuits).
+//
+// For measurement-free circuits: compares Stim tableau representations — exact,
+//   O(n²) in qubit count, deterministic.
+// For measured circuits: sweep-bit sampling is deferred (#52-ext); returns
+//   error with appropriate message.
+//
+// Per ADR-0021: always call circuit.without_noise() first. This removes
+// depolarisation and flip channels so the comparison is noiseless.
+[[nodiscard]] std::expected<bool, std::string>
+checkDetectorMatch(const stim::Circuit& circuit_a,
+                   const stim::Circuit& circuit_b,
+                   std::size_t num_shots = 1024);
 
 } // namespace qfault::oracle
 

@@ -10,8 +10,10 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "stim/util_top/circuit_vs_tableau.h"
+#include "stim/util_top/has_flow.h"
 #pragma GCC diagnostic pop
 
+#include <random>
 #include <sstream>
 #include <unordered_map>
 #include <variant>
@@ -114,6 +116,56 @@ std::expected<bool, std::string> circuits_clifford_equivalent(
         cb, /*ignore_noise=*/false, /*ignore_meas=*/false, /*ignore_reset=*/false);
 
     return ta == tb;
+}
+
+// ── has_flow oracle (ADR-0021) ────────────────────────────────────────────────
+
+std::expected<bool, std::string>
+checkHasFlow(const stim::Circuit& circuit,
+             std::span<const stim::Flow<kStimW>> flows,
+             std::size_t num_samples) {
+    if (flows.empty()) return true;
+
+    // Fixed seed for cross-machine reproducibility (ADR-0021).
+    std::mt19937_64 rng{42};
+
+    try {
+        const auto results = stim::sample_if_circuit_has_stabilizer_flows<kStimW>(
+            num_samples, rng, circuit, flows);
+        for (const bool ok : results) {
+            if (!ok) return false;
+        }
+        return true;
+    } catch (const std::exception& e) {
+        return std::unexpected(std::string("checkHasFlow: ") + e.what());
+    }
+}
+
+std::expected<bool, std::string>
+checkDetectorMatch(const stim::Circuit& circuit_a,
+                   const stim::Circuit& circuit_b,
+                   std::size_t /*num_shots*/) {
+    const stim::Circuit clean_a = circuit_a.without_noise();
+    const stim::Circuit clean_b = circuit_b.without_noise();
+
+    // Sweep-bit sampling for measured circuits is deferred (#52-ext).
+    if (clean_a.count_measurements() > 0 || clean_b.count_measurements() > 0) {
+        return std::unexpected(
+            "checkDetectorMatch: sweep-bit sampling for measured circuits "
+            "is deferred to #52-ext");
+    }
+
+    try {
+        const auto ta = stim::circuit_to_tableau<kStimW>(
+            clean_a, /*ignore_noise=*/false,
+            /*ignore_meas=*/false, /*ignore_reset=*/false);
+        const auto tb = stim::circuit_to_tableau<kStimW>(
+            clean_b, /*ignore_noise=*/false,
+            /*ignore_meas=*/false, /*ignore_reset=*/false);
+        return ta == tb;
+    } catch (const std::exception& e) {
+        return std::unexpected(std::string("checkDetectorMatch: ") + e.what());
+    }
 }
 
 } // namespace qfault::oracle
