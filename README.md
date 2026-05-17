@@ -9,11 +9,11 @@ logical quantum circuit (Clifford+T) and compiles it to fault-tolerant gate
 sequences for surface-code execution, validated against the Stim simulator
 and the MQT QCEC equivalence checker.
 
-> **Status (May 2026):** Stages 1, 2, and 2.5 are complete.
-> 144/144 tests pass on the Stim+QCEC build (`gcc13-stim`); 123/123 on the
-> standard debug/release builds. Stage 3 (lattice surgery routing) is now
-> active. v0.1.0 release ETA Q4 2026. Numerical claims, scope, and design
-> decisions are recorded as [Architecture Decision Records](docs/adr/README.md).
+> **Status (May 2026):** Stages 1, 2, 2.5, and 3 are complete.
+> 272/272 tests pass on the Stim+QCEC build (`gcc13-stim`). Stage 4 (MSD
+> scheduling + resource estimator) is now active. v0.1.0 release ETA Q4 2026.
+> Numerical claims, scope, and design decisions are recorded as
+> [Architecture Decision Records](docs/adr/README.md).
 
 ---
 
@@ -59,8 +59,8 @@ emission, with an LLVM-inspired `PassManager` and a C++20 Concept-based
 | 1 | IR + PassManager + QASM 3.0 frontend | ✅ Complete | 93 |
 | 2 | T-gate synthesis (`GridSynthProvider`, `BFSTableProvider`) | ✅ Complete | 118 |
 | 2.5 | Stim v1.15.0 + MQT QCEC v3.5.0 oracle, bench corpus, Dockerfile, flake.nix, CI | ✅ Complete | 144 (stim build) |
-| 3 | Lattice surgery routing (A* + Litinski templates + EAF scheduler) | 🚧 **Active** | — |
-| 4 | MSD scheduling + Beverland 2022 factory catalog | 🚧 Planned | — |
+| 3 | Lattice surgery routing (A* + Litinski templates + EAF scheduler) | ✅ Complete | 272 |
+| 4 | MSD scheduling + Beverland 2022 factory catalog | 🚧 **Active** | — |
 | 5 | Output backends (QASM 3.0, QIR, Stim native) + Python bindings | 🚧 Planned | — |
 | 6 | Native Ross-Selinger + Kliuchnikov-2023 (optional) | 🚧 Planned | — |
 | 7 | Formal-methods or MLIR stretch (optional) | 🚧 Planned | — |
