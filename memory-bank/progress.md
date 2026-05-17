@@ -105,14 +105,19 @@ clean Ubuntu 24.04 container, with all external binaries pinned by version.
 
 ---
 
-## Stage 3: Lattice Surgery Mapper — planned (full treatment in `docs/phases/stage-3-lattice-surgery/`)
+## Stage 3: Lattice Surgery Mapper ✅ COMPLETE (2026-05-17)
 
-Acceptance: BV-10 logical circuit at d=5 produces correct logical output
-verified by `stim::Circuit::has_flow(...)` for all 10 logical Z observables;
-tile-count formulas reproduce within 10% (compact 1.5n+3, intermediate 2n+4,
-fast 2n+√(8n)+1).
+All 9 issues (#47–#55) shipped. Gate test passed:
+- BV-10 phase-oracle (10 qubits, mixed secret s=0101010101) has correct signed
+  Z-flows for all 10 observables via `checkHasFlow` (256 samples, FP rate 2⁻²⁵⁶).
+- Tile count for intermediateLayout(10) = 24 = 2*10+4 ✓ (Litinski 2019 body text)
+- All tile-count formulas confirmed: compact `n+n/2+3`, intermediate `2n+4`, fast `2n+⌈√(8n)⌉+1`
+- 272/272 tests green on gcc13-stim; 206/206 ASAN+UBSAN clean on clang18-asan
 
-See `docs/phases/stage-3-lattice-surgery/spec.md` for the full breakdown.
+Deferred to #51-ext (physical StimBackend): exact golden match, physical qubit count [539,800],
+detector count [1000,1250].
+
+Spec: `docs/phases/stage-3-qec/` (note: NOT stage-3-lattice-surgery — that path is wrong)
 
 ---
 

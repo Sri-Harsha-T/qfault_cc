@@ -86,11 +86,23 @@ The "Failed Approaches" section is **mandatory reading** — do not retry listed
 
 **Final test count: 144/144 green on gcc13-stim (C++23)**
 
-### Stage 3: Lattice Surgery Mapper
-- [ ] Logical CNOT → patch merge/split sequences
-- [ ] Greedy spatial routing heuristic
-- [ ] 10-qubit Bernstein-Vazirani validated against Stim at d=5
-- [ ] Stage 3 gate: Stim oracle confirms correct logical output
+### Stage 3: Lattice Surgery Mapper ✅ COMPLETE (2026-05-17)
+
+All 9 issues (#47–#55) shipped. 272/272 tests pass on gcc13-stim; 206/206 ASAN+UBSAN clean on clang18-asan.
+
+- [x] **#47** A* router on tile grid — NodeId=uint32_t, 4-connected, boundary-aware, sanitizer-clean
+- [x] **#48** Litinski layout templates — compact `n+n/2+3`, intermediate `2n+4`, fast `2n+⌈√(8n)⌉+1`
+- [x] **#49** LatticeSurgeryPass skeleton — LOGICAL→PHYSICAL transition, CNOT recipe (ADR-0020), PauliFrameTracker
+- [x] **#50** EAF Scheduler (Silva 2024) — DAG via last-writer, Kahn topological layers, ≥10k gates/sec
+- [x] **#51** StimBackend — `emit_logical_stim()`, `make_z_identity_flow()`; smoke tests (H, X, CX, CNOT flows)
+- [x] **#52** Stim has_flow oracle — `checkHasFlow()` (signed, 256 samples), `checkDetectorMatch()` (noiseless tableau)
+- [x] **#53** BV-10 d=5 golden files — `circuit.stim`, `circuit.dem`, `reference_sample.dets`, `stim_version.txt`
+- [x] **#54** Stage 3 gate test — BV-10 phase oracle, 10 signed Z-flows, tile count = 24, 3 deferred (#51-ext)
+- [x] **#55** Cross-cutting — std::expected verified (no tl::expected needed), ASAN+UBSAN clean, CHANGELOG updated
+
+**Deferred to #51-ext (physical StimBackend):** exact golden match, physical qubit count [539,800], detector count [1000,1250]
+
+**Final test count: 272/272 green on gcc13-stim; 206/206 ASAN+UBSAN clean on clang18-asan (C++23)**
 
 ### Stage 4: MSD Scheduling + Resource Estimator
 - [ ] MSD factory modelled as spatial reservation

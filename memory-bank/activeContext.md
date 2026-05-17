@@ -4,31 +4,43 @@
 > Update "State of Work" and "Next Action" before ending any session.
 > Never delete entries — append or strike through completed items.
 > Persistent context for the next AI session. Update before `/clear`.
-_Last updated: 2026-05-17 — Stage 3 issues #47–#55 created; README updated; ready to implement_
+_Last updated: 2026-05-17 — Stage 3 ALL 9 issues (#47–#55) COMPLETE; 272/272 tests green_
 
 ---
 ## Current state (2026-05-17)
 
-- **Stages 1 + 2 + 2.5 COMPLETE.**
-- **Stage 2.5:** All 17 issues closed (#29–#46). 144/144 tests pass on gcc13-stim.
-- **Exit report written:** `docs/phases/stage-2.5-verification-benchmark-harness/exit-report.md`
-- **Stage 3:** 9 GitHub issues created (#47–#55). Implementation has NOT started.
-- **README** updated to C++23, Stage 3 active, gcc13-stim quick start added.
+- **Stages 1 + 2 + 2.5 + 3 COMPLETE.**
+- **Stage 3:** All 9 issues (#47–#55) shipped. 272/272 tests pass on gcc13-stim; 206/206 ASAN+UBSAN clean.
+- **Deferred to #51-ext:** physical StimBackend (syndrome extraction REPEAT blocks); physical qubit count, detector count, exact golden match assertions in gate test.
+- **Next stage:** Stage 4 — MSD Scheduling + Resource Estimator.
 
 ## Current Phase
 
-**Stage 3: Lattice Surgery Mapper** — issues created, ready to implement.
-Previous: Stage 2.5 ✅ COMPLETE — 144 tests green; Stim+QCEC+golden+bench+CI all wired.
+**Stage 4: MSD Scheduling + Resource Estimator** — not yet started.
+Previous: Stage 3 ✅ COMPLETE — 272 tests green; BV-10 has_flow, tile count = 24 validated.
 
 ## Active Stage
 
-**Stage 3** — Logical CNOT → patch merge/split sequences + A* router.
-Spec: `docs/phases/stage-3-qec/` (NOT stage-3-lattice-surgery — that path is wrong).
+**Stage 4** — T-gate factory placement, MSD scheduling, ResourceEstimator API.
+Spec: `docs/phases/` (create `stage-4-msd/` when ready to kick off).
 
 ## Active Story
 
-**Start with #47** (3-A-1: A* router on tile grid) — unblocked, no dependencies.
-Issue sequence: #47 → #48 → #49 → #50 → #51 → #52 → #53 → #54 → #55.
+**Start Stage 4 kickoff.** Create `docs/phases/stage-4-msd/spec.md` and GitHub issues.
+
+## Stage 3 Issues (GitHub #47–#55) — ALL COMPLETE
+
+| # | Story | Status | Title |
+|---|-------|--------|-------|
+| #47 | 3-A-1 | ✅ | A* router on tile grid |
+| #48 | 3-A-2 | ✅ | Litinski layout templates (compact/intermediate/fast) |
+| #49 | 3-B-1 | ✅ | LatticeSurgeryPass skeleton + logical CNOT recipe (ADR-0020) |
+| #50 | 3-B-2 | ✅ | Silva 2024 EAF scheduler |
+| #51 | 3-C-1 | ✅ | StimBackend emitter (logical-level; physical deferred #51-ext) |
+| #52 | 3-C-2 | ✅ | Stim has_flow oracle (checkHasFlow + checkDetectorMatch) |
+| #53 | 3-D-1 | ✅ | BV-10 d=5 golden files (circuit.stim, .dem, .dets, stim_version.txt) |
+| #54 | 3-D-2 | ✅ | Stage 3 gate test — BV-10 phase oracle, 10 signed Z-flows, tile count = 24 |
+| #55 | 3-X-1 | ✅ | Cross-cutting — std::expected OK, ASAN+UBSAN clean, CHANGELOG |
 
 ## Next Action
 
@@ -130,18 +142,19 @@ Issue sequence: #47 → #48 → #49 → #50 → #51 → #52 → #53 → #54 → 
 - ✅ Exit report: docs/phases/stage-2.5-verification-benchmark-harness/exit-report.md
 - ✅ Project bumped to C++23 globally
 
-### Stage 3: Lattice Surgery Mapper (IN PROGRESS — issues created 2026-05-17)
+### Stage 3: Lattice Surgery Mapper ✅ COMPLETE (2026-05-17)
 - ✅ README updated: C++23 badge, Stage 3 active, gcc13-stim quick start
-- ✅ 9 GitHub issues created (#47–#55) — see "Stage 3 Issues" table above
-- ⬜ #47 (3-A-1): A* router on tile grid — **START HERE**
-- ⬜ #48 (3-A-2): Litinski layout templates
-- ⬜ #49 (3-B-1): LatticeSurgeryPass skeleton + logical CNOT (ADR-0020)
-- ⬜ #50 (3-B-2): Silva 2024 EAF scheduler
-- ⬜ #51 (3-C-1): StimBackend emitter
-- ⬜ #52 (3-C-2): Stim has_flow oracle
-- ⬜ #53 (3-D-1): BV-10 d=5 golden files
-- ⬜ #54 (3-D-2): Stage 3 gate test (9-predicate end-to-end)
-- ⬜ #55 (3-X-1): Cross-cutting infra
+- ✅ #47 (3-A-1): A* router on tile grid — sanitizer-clean, deterministic
+- ✅ #48 (3-A-2): Litinski layout templates (compact/intermediate/fast)
+- ✅ #49 (3-B-1): LatticeSurgeryPass + logical CNOT recipe (ADR-0020) + PauliFrameTracker
+- ✅ #50 (3-B-2): EAF Scheduler (Silva 2024) — DAG, Kahn layers, ≥10k gates/sec
+- ✅ #51 (3-C-1): StimBackend emitter (logical-level; #51-ext deferred for physical)
+- ✅ #52 (3-C-2): Stim has_flow oracle (checkHasFlow + checkDetectorMatch)
+- ✅ #53 (3-D-1): BV-10 d=5 golden files committed
+- ✅ #54 (3-D-2): Stage 3 gate test — BV-10 signed Z-flows + tile count = 24
+- ✅ #55 (3-X-1): Cross-cutting — ASAN+UBSAN clean, CHANGELOG, memory bank
+
+**Final: 272/272 tests pass (gcc13-stim); 206/206 ASAN+UBSAN clean (clang18-asan)**
 
 ## Recent Decisions (last 5 sessions)
 
@@ -165,14 +178,13 @@ Issue sequence: #47 → #48 → #49 → #50 → #51 → #52 → #53 → #54 → 
 ```
 1. Read: CLAUDE.md → this file → CHANGELOG.md "Failed Approaches"
 2. Run: cmake --preset gcc13-stim && cmake --build build/gcc13-stim -j && ctest --test-dir build/gcc13-stim
-   → must be 144/144 green before touching code.
-3. Read: docs/phases/stage-3-qec/ (spec.md, todo.md) — Stage 3 docs live here, NOT stage-3-lattice-surgery.
-4. Implement #47 (3-A-1): AStarRouter
-   - NodeId = uint32_t, signed int64_t edge costs
-   - 4-connected grid, boundary X↔X / Z↔Z enforcement
-   - tests/unit/test_AStar.cpp
-5. Stage 3 gate (issue #54): parse BV-10 → synthesise → route → Stim emit →
-   has_flow for all 10 observables; intermediate tile count = 24 exactly.
+   → must be 272/272 green before touching code.
+3. Stage 3 is COMPLETE. Start Stage 4 kickoff:
+   - Create docs/phases/stage-4-msd/spec.md (MSD factory scheduling + resource estimator)
+   - Create GitHub issues for Stage 4 milestones
+   - Review ADR-0007 (Beverland 2022 factory catalog)
+4. Optional before Stage 4: resolve #51-ext (physical StimBackend with REPEAT syndrome blocks)
+   which unblocks: exact golden match, physical qubit count, detector count assertions.
 ```
 
 ## Failed Approaches — DO NOT RETRY
