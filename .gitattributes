@@ -1,0 +1,2 @@
+# Prevent CRLF corruption on Windows CI for committed golden files.
+bench/golden/** text eol=lf
